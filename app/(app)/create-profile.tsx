@@ -59,6 +59,12 @@ export default function CreateProfile() {
         disabled={loading}
         onPress={() => handleCreateProfile()}
       />
+      <Button
+        title="Odjavi se"
+        onPress={() => {
+          supabase.auth.signOut();
+        }}
+      />
     </View>
   );
 }
