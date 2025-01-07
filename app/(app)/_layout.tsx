@@ -1,7 +1,7 @@
 import { Redirect, Slot, Stack, usePathname } from "expo-router";
 
 const isLoggedIn = false;
-const hasProfile = false;
+const hasProfile = true;
 
 export default function AppLayout() {
   const pathname = usePathname();
