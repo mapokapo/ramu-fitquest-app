@@ -53,6 +53,48 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
       return;
     }
 
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        const message = mapError(error);
+
+        toast({
+          title: message,
+        });
+
+        console.error(`Error fetching profile: ${error.message}`);
+
+        setProfile({
+          loaded: true,
+          data: null,
+        });
+        return;
+      }
+
+      if (data === null) {
+        setProfile({
+          loaded: true,
+          data: null,
+        });
+        return;
+      }
+
+      setProfile({
+        loaded: true,
+        data: {
+          id: data.id,
+          name: data.name,
+        },
+      });
+    };
+
+    fetchProfile();
+
     const subscription = supabase.realtime
       .channel("profiles")
       .on(

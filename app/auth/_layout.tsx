@@ -1,10 +1,15 @@
 import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
-const isLoggedIn = false;
+import { useUser } from "@/lib/context/user-provider";
 
 export default function AuthLayout() {
-  if (isLoggedIn) {
+  const { user } = useUser();
+
+  if (!user.loaded) {
+    return null;
+  }
+
+  if (user.data !== null) {
     return <Redirect href="/" />;
   } else {
     return (
