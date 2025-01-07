@@ -19,6 +19,8 @@ export const mapError = (error: unknown) => {
         return "Račun s tim podacima ne postoji.";
       case "weak_password":
         return "Lozinka mora biti barem 6 znakova duga.";
+      case "user_already_exists":
+        return "Račun s tim emailom već postoji.";
       default:
         return error.message;
     }
