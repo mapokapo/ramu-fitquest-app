@@ -2,7 +2,7 @@ import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import { ScrollView, Text, View } from "react-native";
 
-export default function Index() {
+export default function Home() {
   return (
     <ScrollView contentContainerClassName="p-4 gap-8">
       <Text className="text-3xl font-bold">Buttons</Text>

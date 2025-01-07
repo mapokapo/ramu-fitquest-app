@@ -1,15 +1,13 @@
-import { Stack } from "expo-router";
+import "expo-dev-client";
+import { Slot } from "expo-router";
 
 import "../global.css";
+import { UserProvider } from "@/lib/context/user-provider";
 
 export default function RootLayout() {
   return (
-    <Stack
-      screenOptions={{
-        contentStyle: {
-          backgroundColor: "white",
-        },
-      }}
-    />
+    <UserProvider>
+      <Slot />
+    </UserProvider>
   );
 }
