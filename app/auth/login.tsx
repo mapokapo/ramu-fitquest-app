@@ -9,7 +9,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   async function signInWithEmail() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
@@ -22,7 +22,7 @@ export default function Auth() {
   }
 
   function goToCreate() {
-    router.replace('/auth/register');
+    router.replace("/auth/register");
   }
 
   return (

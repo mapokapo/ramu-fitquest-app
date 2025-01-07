@@ -11,15 +11,17 @@ export default function Auth() {
 
   async function handleSignUp() {
     setLoading(true);
-    const { data: {session},
-       error } = await supabase.auth.signUp({
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.signUp({
       email: email,
       password: password,
     });
-    if (error) alert(error.message)
-    else if (!session){
-      alert('Please check your inbox for email verification!')
-      router.replace('/auth/login');
+    if (error) alert(error.message);
+    else if (!session) {
+      alert("Please check your inbox for email verification!");
+      router.replace("/auth/login");
     }
     setLoading(false);
   }
