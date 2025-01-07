@@ -13,8 +13,8 @@ import { supabase } from "@/lib/supabase";
 import { User } from "@/lib/context/user-provider";
 
 export type Profile = {
-  id: string;
   name: string;
+  points: number;
 };
 
 type ProfileProviderProps = PropsWithChildren & {
@@ -62,11 +62,9 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
 
       if (error) {
         const message = mapError(error);
-
         toast({
           title: message,
         });
-
         console.error(`Error fetching profile: ${error.message}`);
 
         setProfile({
@@ -87,8 +85,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
       setProfile({
         loaded: true,
         data: {
-          id: data.id,
           name: data.name,
+          points: data.points,
         },
       });
     };
@@ -115,8 +113,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
             setProfile({
               loaded: true,
               data: {
-                id: payload.new.id,
                 name: payload.new.name,
+                points: payload.new.points,
               },
             });
           } else if (payload.eventType === "DELETE") {
@@ -132,44 +130,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
     return () => {
       subscription.unsubscribe();
     };
-    /*
-      .onSnapshot(
-        snapshot => {
-          if (!snapshot.exists) {
-            setProfile({
-              loaded: true,
-              data: null,
-            });
-            return;
-          }
-
-          setProfile({
-            loaded: true,
-            data: {
-              uid: snapshot.id,
-              name: snapshot.get("name"),
-              dateOfBirth: (snapshot.get("dateOfBirth") as Timestamp).toDate(),
-              email: snapshot.get("email"),
-              photoURL: snapshot.get<string | null>("photoURL") ?? undefined,
-              points: snapshot.get("points"),
-            },
-          });
-        },
-        e => {
-          const message = mapError(e);
-
-          toast({
-            title: message,
-          });
-
-          console.error(e);
-
-          setProfile({
-            loaded: true,
-            data: null,
-          });
-        }
-      );*/
   }, [user]);
 
   const value = useMemo(() => ({ profile, setProfile }), [profile, setProfile]);
