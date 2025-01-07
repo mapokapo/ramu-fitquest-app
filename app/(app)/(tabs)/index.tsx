@@ -10,8 +10,8 @@ export default function Home() {
 
   return (
     <View className="flex-1 gap-8 bg-background p-8">
-      <Text>Ulogirali ste se! Dobrodosli na pocetnu stranicu.</Text>
-      <Text>Vas email: {user.email ?? "Nepoznato"}</Text>
+      <Text>Ulogirali ste se! Dobrodošli na početnu stranicu.</Text>
+      <Text>Vaš email: {user.email ?? "Nepoznato"}</Text>
       {profile.loaded ? (
         <View>
           <Text>Vaše ime: {profile.data.name}</Text>
