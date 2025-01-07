@@ -1,4 +1,5 @@
 import Button from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
 import { Text, View } from "react-native";
 
 export default function Home() {
@@ -7,7 +8,9 @@ export default function Home() {
       <Text>Ulogirali ste se! Dobrodosli na pocetnu stranicu.</Text>
       <Button
         title="Odlogiraj se"
-        onPress={() => {}}
+        onPress={() => {
+          supabase.auth.signOut();
+        }}
       />
     </View>
   );
