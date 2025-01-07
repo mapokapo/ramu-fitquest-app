@@ -19,28 +19,44 @@ const inputVariants = tv({
 export interface InputProps
   extends Omit<TextInputProps, "children">,
     VariantProps<typeof inputVariants> {
+  textInputClassName?: string;
+  errorTextClassName?: string;
   errorText?: string;
+  labelClassName?: string;
+  label?: string;
 }
 
 const Input: React.FC<InputProps> = ({
   className,
+  textInputClassName,
+  errorTextClassName,
+  labelClassName,
   variant,
+  label,
   errorText,
   ...props
 }) => {
   return (
-    <View>
+    <View className={className}>
+      {label && (
+        <Text className={cn("text-sm text-muted-foreground", labelClassName)}>
+          {label}
+        </Text>
+      )}
       <TextInput
         className={cn(
           inputVariants({
             variant,
-            className,
+            className: textInputClassName,
           })
         )}
+        placeholderClassName="text-muted-foreground"
         {...props}
       />
       {errorText && (
-        <Text className="text-sm text-destructive">{errorText}</Text>
+        <Text className={cn("text-sm text-destructive", errorTextClassName)}>
+          {errorText}
+        </Text>
       )}
     </View>
   );
