@@ -18,6 +18,10 @@ export default function Auth() {
     setLoading(false)
   }
 
+//  ---------  MATE OBAVIJEST ZA TEBE  ------------
+//  Ovdje imas jos jednu funkciju signUpWithEmail() koja ce se pozivati kad korisnik zeli kreirati novi account  
+//  samo moras dodati novi button koji ce pozivati tu funkciju.
+
   async function signUpWithEmail() {
     setLoading(true)
     const {
