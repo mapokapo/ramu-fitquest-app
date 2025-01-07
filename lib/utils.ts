@@ -17,6 +17,8 @@ export const mapError = (error: unknown) => {
         return "Neispravni podaci.";
       case "invalid_credentials":
         return "Račun s tim podacima ne postoji.";
+      case "weak_password":
+        return "Lozinka mora biti barem 6 znakova duga.";
       default:
         return error.message;
     }
