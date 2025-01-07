@@ -12,12 +12,19 @@ export const mapError = (error: unknown) => {
   }
 
   if (isAuthError(error)) {
-    return error.message;
+    switch (error.code) {
+      case "validation_failed":
+        return "Neispravni podaci.";
+      case "invalid_credentials":
+        return "Račun s tim podacima ne postoji.";
+      default:
+        return error.message;
+    }
   }
 
   if (error instanceof Error) {
     return error.message;
   }
 
-  return "An unknown error occurred.";
+  return "Nepoznata greška.";
 };
