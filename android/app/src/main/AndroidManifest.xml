@@ -27,6 +27,7 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="fitquest"/>
         <data android:scheme="com.fitquest.app"/>
+        <data android:scheme="exp+fitquest"/>
       </intent-filter>
     </activity>
   </application>
