@@ -40,4 +40,3 @@ app-example
 
 # secrets
 .env
-package-lock.json
