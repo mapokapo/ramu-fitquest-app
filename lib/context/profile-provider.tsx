@@ -58,7 +58,8 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
         const message = mapError(error);
