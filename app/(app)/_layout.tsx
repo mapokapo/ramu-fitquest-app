@@ -1,9 +1,18 @@
 import { ProfileProvider, useProfile } from "@/lib/context/profile-provider";
 import { useUser } from "@/lib/context/user-provider";
-import { Redirect, Stack, usePathname } from "expo-router";
+import { Redirect, SplashScreen, Stack, usePathname } from "expo-router";
+import { useEffect } from "react";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function AppLayout() {
   const { user } = useUser();
+
+  useEffect(() => {
+    if (user.loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [user]);
 
   if (!user.loaded) {
     return null;
@@ -36,13 +45,7 @@ function ProfileLoader() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen
-        name="create-profile"
-        options={{
-          headerShown: true,
-          title: "Create Profile",
-        }}
-      />
+      <Stack.Screen name="create-profile" />
     </Stack>
   );
 }

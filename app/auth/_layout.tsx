@@ -1,9 +1,18 @@
-import { Redirect, Tabs } from "expo-router";
+import { Redirect, SplashScreen, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useUser } from "@/lib/context/user-provider";
+import { useEffect } from "react";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function AuthLayout() {
   const { user } = useUser();
+
+  useEffect(() => {
+    if (user.loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [user]);
 
   if (!user.loaded) {
     return null;
@@ -23,7 +32,7 @@ export default function AuthLayout() {
         <Tabs.Screen
           name="login"
           options={{
-            title: "Log in",
+            title: "Prijava",
             tabBarIcon: ({ color, size }) => (
               <Ionicons
                 name="log-in"
@@ -36,7 +45,7 @@ export default function AuthLayout() {
         <Tabs.Screen
           name="register"
           options={{
-            title: "Register",
+            title: "Registracija",
             tabBarIcon: ({ color, size }) => (
               <Ionicons
                 name="person-add"
