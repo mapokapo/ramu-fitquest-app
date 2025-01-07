@@ -11,20 +11,27 @@ import Button from "@/components/ui/button";
 export default function CreateProfile() {
   const user = useAppUser();
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<null | string>(null);
 
   async function handleCreateProfile() {
+    setLoading(true);
+
     const { error } = await supabase
       .from("profiles")
       .insert({ id: user.id, name, points: 0 });
 
     if (error) {
       const message = mapError(error);
+      setError(message);
       toast({
         title: "Greška prilikom kreiranja profila",
         message: message,
       });
       console.error("Error creating profile:", error);
     }
+
+    setLoading(false);
   }
 
   return (
@@ -32,25 +39,24 @@ export default function CreateProfile() {
       <Text className="text-center text-2xl font-bold">
         Stvorite svoj profil
       </Text>
-
-      <View className="flex-row items-end gap-4">
-        <Ionicons
-          className="mb-2"
-          name="mail"
-          size={24}
-          color="black"
-        />
-        <Input
-          className="flex-1"
-          label="Ime"
-          onChangeText={text => setName(text)}
-          value={name}
-          placeholder="Unesite ime..."
-          autoCapitalize="words"
-        />
-      </View>
+      <Input
+        label="Ime"
+        placeholder="Unesite ime..."
+        leftIcon={
+          <Ionicons
+            name="person"
+            size={24}
+            color="black"
+          />
+        }
+        onChangeText={text => setName(text)}
+        value={name}
+        autoCapitalize="words"
+      />
+      {error !== null && <Text className="text-destructive">{error}</Text>}
       <Button
         title="Kreiraj profil"
+        disabled={loading}
         onPress={() => handleCreateProfile()}
       />
     </View>
