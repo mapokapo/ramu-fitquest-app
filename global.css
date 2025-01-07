@@ -19,11 +19,11 @@
     --accent: 177 30% 80%;
     --accent-foreground: 215 5% 15%;
 
-    --destructive: 0 100% 30%;
+    --destructive: 0 100% 40%;
     --destructive-foreground: 215 5% 90%;
 
     --border: 215 30% 50%;
-    --input: 215 30% 26%;
+    --input: 215 30% 50%;
     --ring: 215 60% 57.8%;
 
     --radius: 0.3rem;
