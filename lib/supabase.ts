@@ -2,8 +2,8 @@ import { AppState } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = 'https://ptriflubxzmryjboadww.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cmlmbHVieHptcnlqYm9hZHd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYyNTAwMjYsImV4cCI6MjA1MTgyNjAyNn0.zteiyn3IU1PbgUT7NAV6Lg6cKjxRfmlWyLYTT9ONSMg';
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase URL or Anon Key");
