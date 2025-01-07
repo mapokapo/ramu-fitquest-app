@@ -1,40 +1,40 @@
-import React, { useState } from 'react'
-import { Alert, StyleSheet, View } from 'react-native'
-import { supabase } from '../../lib/supabase'
-import { Button, Input } from '@rneui/themed'
+import React, { useState } from "react";
+import { Alert, StyleSheet, View } from "react-native";
+import { supabase } from "../../lib/supabase";
+import { Button, Input } from "@rneui/themed";
 
 export default function Auth() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   async function signInWithEmail() {
-    setLoading(true)
+    setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
-    })
+    });
 
-    if (error) Alert.alert(error.message)
-    setLoading(false)
+    if (error) Alert.alert(error.message);
+    setLoading(false);
   }
 
-//  ---------  MATE OBAVIJEST ZA TEBE  ------------
-//  Ovdje imas jos jednu funkciju signUpWithEmail() koja ce se pozivati kad korisnik zeli kreirati novi account  
-//  samo moras dodati novi button koji ce pozivati tu funkciju.
+  //  ---------  MATE OBAVIJEST ZA TEBE  ------------
+  //  Ovdje imas jos jednu funkciju signUpWithEmail() koja ce se pozivati kad korisnik zeli kreirati novi account
+  //  samo moras dodati novi button koji ce pozivati tu funkciju.
 
   async function signUpWithEmail() {
-    setLoading(true)
+    setLoading(true);
     const {
       data: { session },
       error,
     } = await supabase.auth.signUp({
       email: email,
       password: password,
-    })
+    });
 
-    if (error) Alert.alert(error.message)
-    if (!session) Alert.alert('Pogledajte inbox za verifikaciju emaila!')
-    setLoading(false)
+    if (error) Alert.alert(error.message);
+    if (!session) Alert.alert("Pogledajte inbox za verifikaciju emaila!");
+    setLoading(false);
   }
 
   return (
@@ -42,29 +42,33 @@ export default function Auth() {
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Input
           label="Email"
-          leftIcon={{ type: 'font-awesome', name: 'envelope' }}
-          onChangeText={(text) => setEmail(text)}
+          leftIcon={{ type: "font-awesome", name: "envelope" }}
+          onChangeText={text => setEmail(text)}
           value={email}
           placeholder="email@address.com"
-          autoCapitalize={'none'}
+          autoCapitalize={"none"}
         />
       </View>
       <View style={styles.verticallySpaced}>
         <Input
           label="Password"
-          leftIcon={{ type: 'font-awesome', name: 'lock' }}
-          onChangeText={(text) => setPassword(text)}
+          leftIcon={{ type: "font-awesome", name: "lock" }}
+          onChangeText={text => setPassword(text)}
           value={password}
           secureTextEntry={true}
           placeholder="Password"
-          autoCapitalize={'none'}
+          autoCapitalize={"none"}
         />
       </View>
       <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Button title="Sign in" disabled={loading} onPress={() => signInWithEmail()} />
+        <Button
+          title="Sign in"
+          disabled={loading}
+          onPress={() => signInWithEmail()}
+        />
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -75,9 +79,9 @@ const styles = StyleSheet.create({
   verticallySpaced: {
     paddingTop: 4,
     paddingBottom: 4,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
   },
   mt20: {
     marginTop: 20,
   },
-})
+});
