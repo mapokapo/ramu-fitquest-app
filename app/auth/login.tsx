@@ -1,20 +1,34 @@
-import React, { useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { View } from "react-native";
 import { supabase } from "../../lib/supabase";
-import { Button, Input } from "@rneui/themed";
+import { toast } from "burnt";
+import { mapError } from "@/lib/utils";
+import Input from "@/components/ui/input";
+import { Ionicons } from "@expo/vector-icons";
+import Button from "@/components/ui/button";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   async function signInWithEmail() {
     setLoading(true);
+
     const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+      email,
+      password,
     });
 
-    if (error) Alert.alert(error.message);
+    if (error) {
+      const message = mapError(error);
+      toast({
+        title: "Greška prilikom prijave",
+        message: message,
+      });
+      console.error(`Error signing in: ${error.message}`);
+    }
+
     setLoading(false);
   }
 
@@ -24,6 +38,7 @@ export default function Auth() {
 
   async function signUpWithEmail() {
     setLoading(true);
+
     const {
       data: { session },
       error,
@@ -32,37 +47,63 @@ export default function Auth() {
       password: password,
     });
 
-    if (error) Alert.alert(error.message);
-    if (!session) Alert.alert("Pogledajte inbox za verifikaciju emaila!");
+    if (error) {
+      const message = mapError(error);
+      toast({
+        title: "Greška prilikom registracije",
+        message: message,
+      });
+      console.error(`Error signing up: ${error.message}`);
+    }
+
+    if (!session) {
+      toast({
+        title: "Success",
+        message: "Pogledajte inbox za verifikaciju emaila!",
+      });
+    }
+
     setLoading(false);
   }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
+    <View className="flex-1 gap-8 bg-background p-8">
+      <View className="flex-row items-end gap-4">
+        <Ionicons
+          className="mb-2"
+          name="mail"
+          size={24}
+          color="black"
+        />
         <Input
+          className="flex-1"
           label="Email"
-          leftIcon={{ type: "font-awesome", name: "envelope" }}
           onChangeText={text => setEmail(text)}
           value={email}
           placeholder="email@address.com"
           autoCapitalize={"none"}
         />
       </View>
-      <View style={styles.verticallySpaced}>
+      <View className="flex-row items-end gap-4">
+        <Ionicons
+          className="mb-2"
+          name="key"
+          size={24}
+          color="black"
+        />
         <Input
-          label="Password"
-          leftIcon={{ type: "font-awesome", name: "lock" }}
+          className="flex-1"
+          label="Lozinka"
           onChangeText={text => setPassword(text)}
           value={password}
           secureTextEntry={true}
-          placeholder="Password"
+          placeholder="Lozinka"
           autoCapitalize={"none"}
         />
       </View>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
+      <View>
         <Button
-          title="Sign in"
+          title="Prijavi se"
           disabled={loading}
           onPress={() => signInWithEmail()}
         />
@@ -70,18 +111,3 @@ export default function Auth() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 40,
-    padding: 12,
-  },
-  verticallySpaced: {
-    paddingTop: 4,
-    paddingBottom: 4,
-    alignSelf: "stretch",
-  },
-  mt20: {
-    marginTop: 20,
-  },
-});
