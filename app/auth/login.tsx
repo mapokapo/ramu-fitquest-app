@@ -2,11 +2,14 @@ import React, { useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { Button, Input } from "@rneui/themed";
+import { useRouter, useFocusEffect } from "expo-router";
 
 export default function Auth() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  
   async function signInWithEmail() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
@@ -18,23 +21,8 @@ export default function Auth() {
     setLoading(false);
   }
 
-  //  ---------  MATE OBAVIJEST ZA TEBE  ------------
-  //  Ovdje imas jos jednu funkciju signUpWithEmail() koja ce se pozivati kad korisnik zeli kreirati novi account
-  //  samo moras dodati novi button koji ce pozivati tu funkciju.
-
-  async function signUpWithEmail() {
-    setLoading(true);
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
-
-    if (error) Alert.alert(error.message);
-    if (!session) Alert.alert("Pogledajte inbox za verifikaciju emaila!");
-    setLoading(false);
+  function goToCreate() {
+    router.replace('/auth/register');
   }
 
   return (
@@ -65,6 +53,11 @@ export default function Auth() {
           title="Sign in"
           disabled={loading}
           onPress={() => signInWithEmail()}
+        />
+        <Button
+          title="Create an account"
+          disabled={loading}
+          onPress={() => goToCreate()}
         />
       </View>
     </View>
