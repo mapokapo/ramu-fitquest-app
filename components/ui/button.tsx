@@ -4,7 +4,7 @@ import { Pressable, PressableProps, Text } from "react-native";
 import { tv, type VariantProps } from "tailwind-variants";
 
 const buttonVariants = tv({
-  base: "inline-flex items-center justify-center whitespace-nowrap rounded-md transition-colors disabled:opacity-50",
+  base: "flex items-center justify-center whitespace-nowrap rounded-md disabled:opacity-50",
   variants: {
     variant: {
       default: "bg-primary active:bg-primary/90",
