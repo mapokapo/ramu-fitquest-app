@@ -1,4 +1,4 @@
-import { Redirect, Slot, Stack, usePathname } from "expo-router";
+import { Redirect, Stack, usePathname } from "expo-router";
 
 const isLoggedIn = false;
 const hasProfile = false;
@@ -10,7 +10,7 @@ export default function AppLayout() {
     if (!hasProfile && pathname !== "/create-profile") {
       return <Redirect href="/create-profile" />;
     } else if (hasProfile && pathname === "/create-profile") {
-      return <Slot />;
+      return <Redirect href="/" />;
     }
 
     return (
