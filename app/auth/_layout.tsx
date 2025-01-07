@@ -1,7 +1,8 @@
-import { Redirect, SplashScreen, Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useUser } from "@/lib/context/user-provider";
 import { useEffect } from "react";
+import * as SplashScreen from "expo-splash-screen";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -10,7 +11,7 @@ export default function AuthLayout() {
 
   useEffect(() => {
     if (user.loaded) {
-      SplashScreen.hideAsync();
+      SplashScreen.hide();
     }
   }, [user]);
 
