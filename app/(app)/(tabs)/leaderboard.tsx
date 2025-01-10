@@ -11,8 +11,8 @@ Nisam jos skontao kako rjesiti da trenutnom koroisniku pokaze bodove, to cu kasn
 export default function Leaderboard() {
   const profile = useAppProfile();
   const user = useAppUser();
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [userRank, setUserRank] = useState(null);
+  const [leaderboard, setLeaderboard] = useState<{ id: string; name: string; points: number }[]>([]);
+  const [userRank, setUserRank] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchLeaderboard() {
@@ -30,7 +30,7 @@ export default function Leaderboard() {
       setLeaderboard(data);
 
       if (profile) {
-        const rank = data.findIndex((u) => u.id === profile.id) + 1;
+        const rank = data.findIndex((u) => u.id === user.id) + 1;
         setUserRank(rank);
       }
     }
@@ -38,10 +38,10 @@ export default function Leaderboard() {
     fetchLeaderboard();
   }, [profile]);
 
-  const renderItem = ({ item, index }) => (
+  const renderItem = ({ item, index }: { item: { id: string; name: string; points: number }; index: number }) => (
     <View
       className={`flex-row justify-between py-2 px-4 border-b border-gray-200 ${
-        item.id === profile?.id ? "bg-gray-100" : ""
+        item.id === user?.id ? "bg-gray-100" : ""
       }`}
     >
       <Text>{index + 1}. {item.name}</Text>
@@ -53,7 +53,7 @@ export default function Leaderboard() {
     <View className="flex-1 bg-background p-8">
       {profile && (
         <View className="mb-4 p-4 bg-gray-200 rounded">
-          <Text className="text-lg font-bold">Vaši bodovi: {profile.points}</Text>
+          <Text className="text-lg font-bold">Vaši bodovi: {profile.data.points}</Text>
           <Text className="text-sm">Vaš rank: {userRank || "Niste rankirani"}</Text>
         </View>
       )}
