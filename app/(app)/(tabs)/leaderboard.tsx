@@ -5,8 +5,6 @@ import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 import { Text, View, FlatList } from "react-native";
 
-/*Leaderboard radi...uglavnom, trenutno nije jos uredjen ali funkcionira.
-Nisam jos skontao kako rjesiti da trenutnom koroisniku pokaze bodove, to cu kasnije.*/
 
 export default function Leaderboard() {
   const profile = useAppProfile();
