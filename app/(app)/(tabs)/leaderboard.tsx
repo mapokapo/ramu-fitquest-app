@@ -52,7 +52,7 @@ export default function Leaderboard() {
       {profile && (
         <View className="mb-4 p-4 bg-gray-200 rounded">
           <Text className="text-lg font-bold">Vaši bodovi: {profile.data.points}</Text>
-          <Text className="text-sm">Vaš rank: {userRank || "Niste rankirani"}</Text>
+          <Text className="text-sm">Vaša pozicija: {userRank || "Niste rankirani"}</Text>
         </View>
       )}
 
