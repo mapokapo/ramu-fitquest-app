@@ -17,6 +17,32 @@ export default function AppTabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="izazovi"
+        options={{
+          title: "Izazovi",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons
+              name="battery-charging"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="leaderboard"
+        options={{
+          title: "Leaderboard",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons
+              name="trophy"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
