@@ -10,7 +10,14 @@ const izazoviLista = [
   "Napraviti 50 sklekova",
   "Odraditi 10 minuta istezanja",
   "Popiti 2 litre vode",
-  "Napraviti 15 minuta meditacije"
+  "Napraviti plank 5 minuta",
+  "Prošetati 10.000 koraka",
+  "Pročitati 10 stranica knjige",
+  "Napraviti 100 trbušnjaka",
+  "Pokazati partneru tko je zvijer u krevetu",
+  "Napraviti 20 čučnjeva",
+  "Prošetati 5 kilometara",
+  "Odraditi 15 minuta joge"
 ];
 
 export default function Izazovi() {
