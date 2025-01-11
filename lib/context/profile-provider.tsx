@@ -11,19 +11,15 @@ import { mapError } from "../utils";
 import { toast } from "burnt";
 import { supabase } from "@/lib/supabase";
 import { User } from "@/lib/context/user-provider";
-
-export type Profile = {
-  name: string;
-  points: number;
-};
+import { Tables } from "@/lib/types/SupabaseDatabaseTypes";
 
 type ProfileProviderProps = PropsWithChildren & {
   user: User | null;
 };
 
 type ProfileProviderState = {
-  profile: AsyncValue<Profile | null>;
-  setProfile: (profile: AsyncValue<Profile | null>) => void;
+  profile: AsyncValue<Tables<"profiles"> | null>;
+  setProfile: (profile: AsyncValue<Tables<"profiles"> | null>) => void;
 };
 
 const initialState: ProfileProviderState = {
@@ -40,9 +36,11 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
   children,
   user,
 }) => {
-  const [profile, setProfile] = useState<AsyncValue<Profile | null>>({
-    loaded: false,
-  });
+  const [profile, setProfile] = useState<AsyncValue<Tables<"profiles"> | null>>(
+    {
+      loaded: false,
+    }
+  );
 
   useEffect(() => {
     if (user === null) {
@@ -85,10 +83,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
 
       setProfile({
         loaded: true,
-        data: {
-          name: data.name,
-          points: data.points,
-        },
+        data,
       });
     };
 
@@ -111,12 +106,19 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
             payload.eventType === "INSERT" ||
             payload.eventType === "UPDATE"
           ) {
-            setProfile({
-              loaded: true,
-              data: {
-                name: payload.new.name,
-                points: payload.new.points,
-              },
+            setProfile(prev => {
+              if (!prev.loaded) return prev;
+              if (prev.data === null) return prev;
+
+              return {
+                loaded: true,
+                data: {
+                  ...prev.data,
+                  name: payload.new.name,
+                  points: payload.new.points,
+                  profile_picture_url: payload.new.profile_picture_url,
+                },
+              };
             });
           } else if (payload.eventType === "DELETE") {
             setProfile({
@@ -152,7 +154,7 @@ export function useProfile() {
   return context;
 }
 
-export function useAppProfile(): AsyncValue<Profile> {
+export function useAppProfile(): AsyncValue<Tables<"profiles">> {
   const { profile } = useProfile();
 
   if (profile.loaded) {
