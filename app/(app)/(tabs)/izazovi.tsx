@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ActivityIndicator, Alert } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import Button from "@/components/ui/button";
 import { useAppUser } from "@/lib/context/user-provider";
 import { supabase } from "@/lib/supabase";
@@ -17,7 +17,7 @@ const izazoviLista = [
   "Pokazati partneru tko je zvijer u krevetu",
   "Napraviti 20 čučnjeva",
   "Prošetati 5 kilometara",
-  "Odraditi 15 minuta joge"
+  "Odraditi 15 minuta joge",
 ];
 
 export default function Izazovi() {
@@ -57,18 +57,18 @@ export default function Izazovi() {
       if (updateError) {
         throw new Error("Greška pri dodavanju bodova: " + updateError.message);
       }
-      
+
       toast({
-              title: "Izazov završen!",
-              message: "Osvojili ste 20 bodova.",
-            });
+        title: "Izazov završen!",
+        message: "Osvojili ste 20 bodova.",
+      });
       generirajNoviIzazov();
     } catch (error) {
       if (error instanceof Error) {
         toast({
-            title: "Greška!",
-            message: error.message,
-          });
+          title: "Greška!",
+          message: error.message,
+        });
       }
     } finally {
       setIsLoading(false);
@@ -78,10 +78,13 @@ export default function Izazovi() {
   return (
     <View className="flex-1 gap-8 bg-background p-8">
       <Text className="text-xl font-bold">Trenutni izazov:</Text>
-      <Text className="text-lg mb-4">{trenutniIzazov}</Text>
+      <Text className="mb-4 text-lg">{trenutniIzazov}</Text>
 
       {isLoading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator
+          size="large"
+          color="#0000ff"
+        />
       ) : (
         <Button
           title="Završi izazov (+20 bodova)"
