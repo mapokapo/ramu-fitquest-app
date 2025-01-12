@@ -1,4 +1,6 @@
+import { themes } from "@/lib/const/color-theme";
 import { cn } from "@/lib/utils";
+import { useColorScheme } from "nativewind";
 import React from "react";
 import { Text, TextInput, TextInputProps, View } from "react-native";
 import { tv, type VariantProps } from "tailwind-variants";
@@ -24,7 +26,13 @@ export interface InputProps
   errorText?: string;
   labelClassName?: string;
   label?: string;
-  leftIcon?: React.ReactNode;
+  leftIcon?: ({
+    size,
+    color,
+  }: {
+    size: number;
+    color: string;
+  }) => React.ReactNode;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -38,6 +46,8 @@ const Input: React.FC<InputProps> = ({
   leftIcon,
   ...props
 }) => {
+  const { colorScheme } = useColorScheme();
+
   return (
     <View className={className}>
       {label && (
@@ -50,7 +60,14 @@ const Input: React.FC<InputProps> = ({
           "flex-row items-center rounded-md border border-input",
           errorText && "border-destructive"
         )}>
-        <View className="pl-2">{leftIcon}</View>
+        <View className="pl-2">
+          {leftIcon !== undefined
+            ? leftIcon({
+                size: 24,
+                color: `hsl(${themes[colorScheme ?? "light"]["--foreground"]})`,
+              })
+            : null}
+        </View>
         <TextInput
           className={cn(
             inputVariants({

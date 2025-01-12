@@ -178,10 +178,12 @@ export default function Izazovi() {
 
   return (
     <View className="flex-1 gap-8 bg-background p-8">
-      <Text className="text-xl font-bold">Današnji izazov:</Text>
+      <Text className="text-xl font-bold text-foreground">
+        Današnji izazov:
+      </Text>
       {dailyChallenge.loaded ? (
         <View>
-          <Text className="mb-4 text-lg">
+          <Text className="mb-4 text-lg text-foreground">
             {challengesTranslationMap(
               dailyChallenge.data.challenge.challenge_code,
               dailyChallenge.data.units
@@ -189,7 +191,7 @@ export default function Izazovi() {
           </Text>
           {challengeProgress.loaded ? (
             <View>
-              <Text>
+              <Text className="text-foreground">
                 Vaš napredak:{" "}
                 {Math.round(
                   (challengeProgress.data.progress /
@@ -204,11 +206,13 @@ export default function Izazovi() {
               />
             </View>
           ) : (
-            <Text>Vaš napredak se učitava...</Text>
+            <Text className="text-foreground">Vaš napredak se učitava...</Text>
           )}
         </View>
       ) : (
-        <Text>Vaš današnji izazov se učitava...</Text>
+        <Text className="text-foreground">
+          Vaš današnji izazov se učitava...
+        </Text>
       )}
     </View>
   );

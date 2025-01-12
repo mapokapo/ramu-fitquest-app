@@ -8,7 +8,7 @@ export default function AppDrawerLayout() {
         <Drawer.Screen
           name="(tabs)"
           options={{
-            title: "Home",
+            title: "App",
           }}
         />
         <Drawer.Screen
