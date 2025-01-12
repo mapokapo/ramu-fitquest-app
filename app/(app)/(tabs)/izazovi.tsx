@@ -1,95 +1,213 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text } from "react-native";
 import Button from "@/components/ui/button";
 import { useAppUser } from "@/lib/context/user-provider";
 import { supabase } from "@/lib/supabase";
 import { toast } from "burnt";
+import AsyncValue from "@/lib/types/AsyncValue";
+import { Tables } from "@/lib/types/SupabaseDatabaseTypes";
+import { mapError } from "@/lib/utils";
 
-const izazoviLista = [
-  "Pređi 2 kilometra",
-  "Napraviti 50 sklekova",
-  "Odraditi 10 minuta istezanja",
-  "Popiti 2 litre vode",
-  "Napraviti plank 5 minuta",
-  "Prošetati 10.000 koraka",
-  "Pročitati 10 stranica knjige",
-  "Napraviti 100 trbušnjaka",
-  "Pokazati partneru tko je zvijer u krevetu",
-  "Napraviti 20 čučnjeva",
-  "Prošetati 5 kilometara",
-  "Odraditi 15 minuta joge",
-];
+const challengesTranslationMap = (
+  challengeCode: string,
+  value: number
+): string | null => {
+  const map: Record<string, ((value: number) => string) | undefined> = {
+    walk_steps: (steps: number) => `Pređite ${steps} koraka`,
+    do_pushups: (pushups: number) => `Napravite ${pushups} sklekova`,
+    stretch_mins: (mins: number) => `Odradite ${mins} minuta istezanja`,
+    drink_water_mls: (mls: number) => `Popijte ${mls} ml vode`,
+    plank_mins: (mins: number) => `Odradite plank ${mins} minuta`,
+    read_pages: (pages: number) => `Pročitajte ${pages} stranica knjige`,
+    do_situps: (situps: number) => `Napravite ${situps} trbušnjaka`,
+    do_squats: (squats: number) => `Napravite ${squats} čučnjeva`,
+    walk_kms: (kms: number) => `Pređite ${kms} kilometara`,
+    do_yoga_mins: (mins: number) => `Odradite ${mins} minuta joge`,
+  };
+
+  const translation = map[challengeCode];
+
+  if (!translation) {
+    return null;
+  }
+
+  return translation(value);
+};
 
 export default function Izazovi() {
   const user = useAppUser();
-  const [trenutniIzazov, setTrenutniIzazov] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [dailyChallenge, setDailyChallenge] = useState<
+    AsyncValue<
+      Tables<"daily_challenges"> & {
+        challenge: Tables<"challenges">;
+      }
+    >
+  >({
+    loaded: false,
+  });
+  const [challengeProgress, setChallengeProgress] = useState<
+    AsyncValue<Tables<"user_challenges">>
+  >({
+    loaded: false,
+  });
 
   useEffect(() => {
-    generirajNoviIzazov();
-  }, []);
-
-  const generirajNoviIzazov = () => {
-    const randomIndex = Math.floor(Math.random() * izazoviLista.length);
-    setTrenutniIzazov(izazoviLista[randomIndex]);
-  };
-
-  const zavrsiIzazov = async () => {
-    setIsLoading(true);
-
-    try {
-      const { data: profile, error: fetchError } = await supabase
-        .from("profiles")
-        .select("points")
-        .eq("id", user.id)
+    async function fetchDailyChallenge() {
+      const { data, error } = await supabase
+        .from("daily_challenges")
+        .select(`*, challenge:challenge_id(*)`)
+        .filter("date", "eq", new Date().toISOString().split("T")[0])
         .single();
 
-      if (fetchError) {
-        throw new Error("Greška pri dohvaćanju bodova: " + fetchError.message);
-      }
-
-      const newPoints = (profile?.points || 0) + 20;
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ points: newPoints })
-        .eq("id", user.id);
-
-      if (updateError) {
-        throw new Error("Greška pri dodavanju bodova: " + updateError.message);
-      }
-
-      toast({
-        title: "Izazov završen!",
-        message: "Osvojili ste 20 bodova.",
-      });
-      generirajNoviIzazov();
-    } catch (error) {
-      if (error instanceof Error) {
+      if (error) {
+        const message = mapError(error);
         toast({
-          title: "Greška!",
-          message: error.message,
+          title: "Greška pri dohvaćanju dnevnog izazova",
+          message: message,
         });
+        console.error("Error fetching daily challenge:", error);
+        return;
       }
-    } finally {
-      setIsLoading(false);
+
+      setDailyChallenge({ loaded: true, data });
     }
+
+    fetchDailyChallenge();
+  }, [user]);
+
+  useEffect(() => {
+    async function fetchDailyChallengeProgress(dailyChallengeId: number) {
+      const { data, error } = await supabase
+        .from("user_challenges")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("daily_challenge_id", dailyChallengeId)
+        .maybeSingle();
+
+      if (error) {
+        const message = mapError(error);
+        toast({
+          title:
+            "Greška pri dohvaćanju vašeg napretka prema postignuću izazova",
+          message: message,
+        });
+        console.error("Error fetching user challenge progress:", error);
+        return;
+      }
+
+      if (data === null) {
+        const { data: newData, error: newError } = await supabase
+          .from("user_challenges")
+          .insert({
+            user_id: user.id,
+            daily_challenge_id: dailyChallengeId,
+            progress: 0,
+          })
+          .select()
+          .single();
+
+        if (newError) {
+          const message = mapError(newError);
+          toast({
+            title: "Greška pri kreiranju vašeg napretka prema izazovu",
+            message: message,
+          });
+          console.error("Error creating user challenge progress:", newError);
+          return;
+        }
+
+        setChallengeProgress({ loaded: true, data: newData });
+      } else {
+        setChallengeProgress({ loaded: true, data });
+      }
+    }
+
+    if (dailyChallenge.loaded) {
+      fetchDailyChallengeProgress(dailyChallenge.data.id);
+    }
+  }, [dailyChallenge, user]);
+
+  const debug_addProgess = async () => {
+    if (!dailyChallenge.loaded || !challengeProgress.loaded) {
+      return;
+    }
+
+    const newProgress = Math.min(
+      Math.max(
+        Math.floor(
+          challengeProgress.data.progress + dailyChallenge.data.units * 0.2
+        ),
+        0
+      ),
+      dailyChallenge.data.units
+    );
+
+    const { error } = await supabase
+      .from("user_challenges")
+      .update({
+        user_id: user.id,
+        daily_challenge_id: dailyChallenge.data.id,
+        progress: newProgress,
+      })
+      .eq("user_id", user.id)
+      .eq("daily_challenge_id", dailyChallenge.data.id);
+
+    if (error) {
+      const message = mapError(error);
+      toast({
+        title: "Greška pri označavanju izazova kao završenog",
+        message: message,
+      });
+      console.error("Error completing daily challenge:", error);
+      return;
+    }
+
+    setChallengeProgress(prev => {
+      if (!prev.loaded) return prev;
+
+      return {
+        loaded: true,
+        data: {
+          ...prev.data,
+          progress: newProgress,
+        },
+      };
+    });
   };
 
   return (
     <View className="flex-1 gap-8 bg-background p-8">
-      <Text className="text-xl font-bold">Trenutni izazov:</Text>
-      <Text className="mb-4 text-lg">{trenutniIzazov}</Text>
-
-      {isLoading ? (
-        <ActivityIndicator
-          size="large"
-          color="#0000ff"
-        />
+      <Text className="text-xl font-bold">Današnji izazov:</Text>
+      {dailyChallenge.loaded ? (
+        <View>
+          <Text className="mb-4 text-lg">
+            {challengesTranslationMap(
+              dailyChallenge.data.challenge.challenge_code,
+              dailyChallenge.data.units
+            ) ?? "Nepoznati izazov"}
+          </Text>
+          {challengeProgress.loaded ? (
+            <View>
+              <Text>
+                Vaš napredak:{" "}
+                {Math.round(
+                  (challengeProgress.data.progress /
+                    dailyChallenge.data.units) *
+                    100
+                )}
+                % završen
+              </Text>
+              <Button
+                title="(DEBUG) Dodaj +20% na napredak na izazov"
+                onPress={debug_addProgess}
+              />
+            </View>
+          ) : (
+            <Text>Vaš napredak se učitava...</Text>
+          )}
+        </View>
       ) : (
-        <Button
-          title="Završi izazov (+20 bodova)"
-          onPress={zavrsiIzazov}
-        />
+        <Text>Vaš današnji izazov se učitava...</Text>
       )}
     </View>
   );
