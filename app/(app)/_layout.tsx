@@ -45,7 +45,7 @@ function ProfileLoader() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ headerShown: false, headerShadowVisible: false }}>
       <Stack.Screen name="create-profile" />
       <Stack.Screen
         name="(drawer)"

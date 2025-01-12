@@ -4,7 +4,10 @@ import { Drawer } from "expo-router/drawer";
 export default function AppDrawerLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Drawer>
+      <Drawer
+        screenOptions={{
+          headerShadowVisible: false,
+        }}>
         <Drawer.Screen
           name="(tabs)"
           options={{
