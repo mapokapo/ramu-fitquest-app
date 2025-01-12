@@ -1,75 +1,79 @@
-import { useAppProfile } from "@/lib/context/profile-provider";
+import LeaderboardItem from "@/components/leaderboard-item";
 import { useAppUser } from "@/lib/context/user-provider";
 import { supabase } from "@/lib/supabase";
+import AsyncValue from "@/lib/types/AsyncValue";
+import { Tables } from "@/lib/types/SupabaseDatabaseTypes";
+import { mapError } from "@/lib/utils";
+import { Ionicons } from "@expo/vector-icons";
+import { toast } from "burnt";
 import { useEffect, useState } from "react";
 import { Text, View, FlatList } from "react-native";
 
 export default function Leaderboard() {
-  const profile = useAppProfile();
   const user = useAppUser();
   const [leaderboard, setLeaderboard] = useState<
-    { id: string; name: string; points: number }[]
-  >([]);
-  const [userRank, setUserRank] = useState<number | null>(null);
+    AsyncValue<Tables<"profiles">[]>
+  >({
+    loaded: false,
+  });
 
   useEffect(() => {
     async function fetchLeaderboard() {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, name, points")
+        .select("*")
         .order("points", { ascending: false })
         .limit(50);
 
       if (error) {
-        console.error("Greška u dohvaćanju ljestvice:", error);
+        const message = mapError(error);
+        toast({
+          title: "Greška pri dohvaćanju ljestvice",
+          message: message,
+        });
+        console.error("Error fetching leaderboard:", error);
         return;
       }
 
-      setLeaderboard(data);
-
-      const rank = data.findIndex(u => u.id === user.id) + 1;
-      setUserRank(rank);
+      setLeaderboard({
+        loaded: true,
+        data,
+      });
     }
 
     fetchLeaderboard();
-  }, [profile, user.id]);
-
-  const renderItem = ({
-    item,
-    index,
-  }: {
-    item: { id: string; name: string; points: number };
-    index: number;
-  }) => (
-    <View
-      className={`flex-row justify-between border-b border-gray-200 px-4 py-2 ${
-        item.id === user?.id ? "bg-gray-100" : ""
-      }`}>
-      <Text>
-        {index + 1}. {item.name}
-      </Text>
-      <Text>{item.points} bodova</Text>
-    </View>
-  );
+  }, [user]);
 
   return (
     <View className="flex-1 bg-background p-8">
-      {profile.loaded && (
-        <View className="mb-4 rounded bg-gray-200 p-4">
-          <Text className="text-lg font-bold">
-            Vaši bodovi: {profile.data.points}
-          </Text>
-          <Text className="text-sm">
-            Vaša pozicija: {userRank || "Niste rankirani"}
-          </Text>
-        </View>
-      )}
+      {leaderboard.loaded ? (
+        <View className="flex-1">
+          <View className="mb-4 rounded bg-gray-200 p-4">
+            <Text className="text-lg font-bold">
+              Vaši ukupni bodovi:{" "}
+              {leaderboard.data.find(u => u.id === user.id)?.points ?? 0}
+            </Text>
+          </View>
 
-      <FlatList
-        data={leaderboard}
-        keyExtractor={item => item.id.toString()}
-        renderItem={renderItem}
-      />
+          <FlatList
+            data={leaderboard.data}
+            keyExtractor={item => item.id.toString()}
+            renderItem={({ item, index }) => (
+              <LeaderboardItem
+                profile={item}
+                currentUser={user}
+                index={index}
+              />
+            )}
+          />
+        </View>
+      ) : (
+        <Ionicons
+          name="refresh"
+          size={32}
+          color="black"
+        />
+      )}
     </View>
   );
 }
