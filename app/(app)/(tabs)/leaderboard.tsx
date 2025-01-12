@@ -1,5 +1,6 @@
 import LeaderboardItem from "@/components/leaderboard-item";
-import { useAppUser } from "@/lib/context/user-provider";
+import Button from "@/components/ui/button";
+import { useAppProfile } from "@/lib/context/profile-provider";
 import { supabase } from "@/lib/supabase";
 import AsyncValue from "@/lib/types/AsyncValue";
 import { Tables } from "@/lib/types/SupabaseDatabaseTypes";
@@ -10,39 +11,48 @@ import { useEffect, useState } from "react";
 import { Text, View, FlatList } from "react-native";
 
 export default function Leaderboard() {
-  const user = useAppUser();
+  const profile = useAppProfile();
   const [leaderboard, setLeaderboard] = useState<
     AsyncValue<Tables<"profiles">[]>
   >({
     loaded: false,
   });
 
-  useEffect(() => {
-    async function fetchLeaderboard() {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("points", { ascending: false })
-        .limit(50);
+  const fetchLeaderboard = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("points", { ascending: false })
+      .limit(50);
 
-      if (error) {
-        const message = mapError(error);
-        toast({
-          title: "Greška pri dohvaćanju ljestvice",
-          message: message,
-        });
-        console.error("Error fetching leaderboard:", error);
-        return;
-      }
-
-      setLeaderboard({
-        loaded: true,
-        data,
+    if (error) {
+      const message = mapError(error);
+      toast({
+        title: "Greška pri dohvaćanju ljestvice",
+        message: message,
       });
+      console.error("Error fetching leaderboard:", error);
+      return;
     }
 
+    setLeaderboard({
+      loaded: true,
+      data,
+    });
+  };
+
+  useEffect(() => {
     fetchLeaderboard();
-  }, [user]);
+  }, []);
+
+  useEffect(() => {
+    if (leaderboard.loaded && leaderboard.data.some(u => u.id === profile.id)) {
+      setLeaderboard({
+        loaded: true,
+        data: leaderboard.data.map(u => (u.id === profile.id ? profile : u)),
+      });
+    }
+  }, [leaderboard, profile]);
 
   return (
     <View className="flex-1 bg-background p-8">
@@ -51,9 +61,17 @@ export default function Leaderboard() {
           <View className="mb-4 rounded bg-gray-200 p-4">
             <Text className="text-lg font-bold">
               Vaši ukupni bodovi:{" "}
-              {leaderboard.data.find(u => u.id === user.id)?.points ?? 0}
+              {leaderboard.data.find(u => u.id === profile.id)?.points ?? 0}
             </Text>
           </View>
+
+          <Button
+            title="Osvježi"
+            onPress={() => {
+              setLeaderboard({ loaded: false });
+              fetchLeaderboard();
+            }}
+          />
 
           <FlatList
             data={leaderboard.data}
@@ -61,7 +79,7 @@ export default function Leaderboard() {
             renderItem={({ item, index }) => (
               <LeaderboardItem
                 profile={item}
-                currentUser={user}
+                currentUser={item.id === profile.id}
                 index={index}
               />
             )}

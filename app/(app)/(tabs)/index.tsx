@@ -12,14 +12,10 @@ export default function Home() {
     <View className="flex-1 gap-8 bg-background p-8">
       <Text>Ulogirali ste se! Dobrodošli na početnu stranicu.</Text>
       <Text>Vaš email: {user.email ?? "Nepoznato"}</Text>
-      {profile.loaded ? (
-        <View>
-          <Text>Vaše ime: {profile.data.name}</Text>
-          <Text>Vaši bodovi: {profile.data.points}</Text>
-        </View>
-      ) : (
-        <Text>Vaš profil se učitava...</Text>
-      )}
+      <View>
+        <Text>Vaše ime: {profile.name}</Text>
+        <Text>Vaši bodovi: {profile.points}</Text>
+      </View>
       <Button
         title="Odjavi se"
         onPress={() => {
