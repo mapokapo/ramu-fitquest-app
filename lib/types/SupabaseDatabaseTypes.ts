@@ -14,18 +14,24 @@ export type Database = {
           challenge_code: string;
           created_at: string;
           id: number;
+          max_units: number;
+          min_units: number;
           reward_multiplier: number;
         };
         Insert: {
           challenge_code: string;
           created_at?: string;
           id?: number;
+          max_units: number;
+          min_units: number;
           reward_multiplier: number;
         };
         Update: {
           challenge_code?: string;
           created_at?: string;
           id?: number;
+          max_units?: number;
+          min_units?: number;
           reward_multiplier?: number;
         };
         Relationships: [];
@@ -91,22 +97,22 @@ export type Database = {
           created_at: string;
           daily_challenge_id: number;
           id: number;
-          profile_id: string;
           progress: number;
+          user_id: string;
         };
         Insert: {
           created_at?: string;
           daily_challenge_id: number;
           id?: number;
-          profile_id: string;
           progress?: number;
+          user_id: string;
         };
         Update: {
           created_at?: string;
           daily_challenge_id?: number;
           id?: number;
-          profile_id?: string;
           progress?: number;
+          user_id?: string;
         };
         Relationships: [
           {
@@ -117,8 +123,8 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "user_challenges_profile_id_fkey";
-            columns: ["profile_id"];
+            foreignKeyName: "user_challenges_user_id_fkey";
+            columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
