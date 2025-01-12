@@ -118,14 +118,14 @@ export type Database = {
           {
             foreignKeyName: "user_challenges_daily_challenge_id_fkey";
             columns: ["daily_challenge_id"];
-            isOneToOne: false;
+            isOneToOne: true;
             referencedRelation: "daily_challenges";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "user_challenges_user_id_fkey";
             columns: ["user_id"];
-            isOneToOne: false;
+            isOneToOne: true;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -136,7 +136,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      add_daily_challenge: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;
