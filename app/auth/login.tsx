@@ -36,17 +36,19 @@ export default function Login() {
 
   return (
     <View className="flex-1 gap-8 bg-background p-8">
-      <Text className="text-center text-2xl font-bold">Prijavite se</Text>
+      <Text className="text-center text-2xl font-bold text-foreground">
+        Prijavite se
+      </Text>
       <Input
         label="Email"
         placeholder="email@address.com"
-        leftIcon={
+        leftIcon={({ size, color }) => (
           <Ionicons
             name="mail"
-            size={24}
-            color="black"
+            size={size}
+            color={color}
           />
-        }
+        )}
         onChangeText={text => setEmail(text)}
         value={email}
         autoCapitalize="none"
@@ -54,13 +56,13 @@ export default function Login() {
       <Input
         label="Lozinka"
         placeholder="Lozinka"
-        leftIcon={
+        leftIcon={({ size, color }) => (
           <Ionicons
             name="key"
-            size={24}
-            color="black"
+            size={size}
+            color={color}
           />
-        }
+        )}
         onChangeText={text => setPassword(text)}
         value={password}
         secureTextEntry={true}

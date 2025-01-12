@@ -10,11 +10,15 @@ export default function Home() {
 
   return (
     <View className="flex-1 gap-8 bg-background p-8">
-      <Text>Ulogirali ste se! Dobrodošli na početnu stranicu.</Text>
-      <Text>Vaš email: {user.email ?? "Nepoznato"}</Text>
+      <Text className="text-foreground">
+        Ulogirali ste se! Dobrodošli na početnu stranicu.
+      </Text>
+      <Text className="text-foreground">
+        Vaš email: {user.email ?? "Nepoznato"}
+      </Text>
       <View>
-        <Text>Vaše ime: {profile.name}</Text>
-        <Text>Vaši bodovi: {profile.points}</Text>
+        <Text className="text-foreground">Vaše ime: {profile.name}</Text>
+        <Text className="text-foreground">Vaši bodovi: {profile.points}</Text>
       </View>
       <Button
         title="Odjavi se"

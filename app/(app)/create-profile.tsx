@@ -36,19 +36,19 @@ export default function CreateProfile() {
 
   return (
     <View className="flex-1 gap-8 bg-background p-8">
-      <Text className="text-center text-2xl font-bold">
+      <Text className="text-center text-2xl font-bold text-foreground">
         Stvorite svoj profil
       </Text>
       <Input
         label="Ime"
         placeholder="Unesite ime..."
-        leftIcon={
+        leftIcon={({ size, color }) => (
           <Ionicons
             name="person"
-            size={24}
-            color="black"
+            size={size}
+            color={color}
           />
-        }
+        )}
         onChangeText={text => setName(text)}
         value={name}
         autoCapitalize="words"
