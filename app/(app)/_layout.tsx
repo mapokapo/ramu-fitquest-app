@@ -1,6 +1,6 @@
 import { ProfileProvider, useProfile } from "@/lib/context/profile-provider";
 import { useUser } from "@/lib/context/user-provider";
-import { Redirect, Slot, Stack, usePathname } from "expo-router";
+import { Redirect, Stack, usePathname } from "expo-router";
 import { useEffect } from "react";
 import * as SplashScreen from "expo-splash-screen";
 
@@ -38,7 +38,7 @@ function ProfileLoader() {
     if (profile.data === null && pathname !== "/create-profile") {
       return <Redirect href="/create-profile" />;
     } else if (profile.data !== null) {
-      return <Slot />;
+      return <Redirect href="/" />;
     }
   } else {
     return null;

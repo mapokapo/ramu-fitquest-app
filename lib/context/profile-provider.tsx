@@ -108,12 +108,13 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({
           ) {
             setProfile(prev => {
               if (!prev.loaded) return prev;
-              if (prev.data === null) return prev;
 
               return {
                 loaded: true,
                 data: {
                   ...prev.data,
+                  id: payload.new.id,
+                  created_at: payload.new.created_at,
                   name: payload.new.name,
                   points: payload.new.points,
                   profile_picture_url: payload.new.profile_picture_url,
