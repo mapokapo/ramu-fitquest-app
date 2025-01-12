@@ -1,0 +1,9 @@
+import { Text, View } from "react-native";
+
+export default function Settings() {
+  return (
+    <View className="flex-1 gap-8 bg-background p-8">
+      <Text className="text-2xl font-bold">Settings</Text>
+    </View>
+  );
+}

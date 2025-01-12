@@ -48,7 +48,7 @@ function ProfileLoader() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="create-profile" />
       <Stack.Screen
-        name="(tabs)"
+        name="(drawer)"
         redirect={profile.loaded && profile.data === null}
       />
     </Stack>

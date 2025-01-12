@@ -46,13 +46,16 @@ export default function Leaderboard() {
   }, []);
 
   useEffect(() => {
-    if (leaderboard.loaded && leaderboard.data.some(u => u.id === profile.id)) {
-      setLeaderboard({
+    setLeaderboard(prev => {
+      if (!prev.loaded) return prev;
+      if (!prev.data.some(u => u.id === profile.id)) return prev;
+
+      return {
         loaded: true,
-        data: leaderboard.data.map(u => (u.id === profile.id ? profile : u)),
-      });
-    }
-  }, [leaderboard, profile]);
+        data: prev.data.map(u => (u.id === profile.id ? profile : u)),
+      };
+    });
+  }, [profile]);
 
   return (
     <View className="flex-1 bg-background p-8">
