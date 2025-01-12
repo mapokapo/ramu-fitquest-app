@@ -56,7 +56,8 @@ export default function Izazovi() {
       const { data, error } = await supabase
         .from("daily_challenges")
         .select(`*, challenge:challenge_id(*)`)
-        .filter("date", "eq", new Date().toISOString().split("T")[0])
+        .order("id", { ascending: false })
+        .limit(1)
         .single();
 
       if (error) {
