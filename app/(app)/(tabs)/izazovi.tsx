@@ -77,22 +77,56 @@ export default function Izazovi() {
 
   useEffect(() => {
     async function fetchDailyChallengeProgress(dailyChallengeId: number) {
-      const { data, error } = await supabase
-        .from("user_challenges")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("daily_challenge_id", dailyChallengeId)
-        .single();
+      let data: Tables<"user_challenges">;
+      const { data: existingUserChallenge, error: existingUserChallengeError } =
+        await supabase
+          .from("user_challenges")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("daily_challenge_id", dailyChallengeId)
+          .maybeSingle();
 
-      if (error) {
-        const message = mapError(error);
+      if (existingUserChallengeError) {
+        const message = mapError(existingUserChallengeError);
         toast({
           title:
             "Greška pri dohvaćanju vašeg napretka prema postignuću izazova",
           message: message,
         });
-        console.error("Error fetching user challenge progress:", error);
+        console.error(
+          "Error fetching user challenge progress:",
+          existingUserChallengeError
+        );
         return;
+      }
+
+      if (existingUserChallenge === null) {
+        const { data: newUserChallenge, error: newUserChallengeError } =
+          await supabase
+            .from("user_challenges")
+            .insert({
+              user_id: user.id,
+              daily_challenge_id: dailyChallengeId,
+              progress: 0,
+            })
+            .single();
+
+        if (newUserChallengeError) {
+          const message = mapError(newUserChallengeError);
+          toast({
+            title: "Greška pri kreiranju vašeg napretka prema izazovu",
+            message: message,
+          });
+          console.error(
+            "Error creating user challenge progress:",
+            newUserChallengeError
+          );
+          return;
+        }
+
+        data = newUserChallenge;
+      } else {
+        data = existingUserChallenge;
       }
 
       setChallengeProgress({ loaded: true, data });
