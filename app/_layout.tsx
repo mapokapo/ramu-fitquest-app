@@ -8,8 +8,12 @@ import { SettingsProvider, useSettings } from "@/lib/context/settings-provider";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { useColorScheme } from "nativewind";
-import { View } from "react-native";
-import { reactNavigationThemes, themes } from "@/lib/const/color-theme";
+import { StatusBar, StyleProp, View, ViewStyle } from "react-native";
+import {
+  reactNavigationThemes,
+  themeDatas,
+  themes,
+} from "@/lib/const/color-theme";
 import { ThemeProvider } from "@react-navigation/native";
 
 SplashScreen.preventAutoHideAsync();
@@ -38,12 +42,14 @@ function SettingsLoader() {
     return null;
   }
 
-  console.log(themes[colorScheme ?? "light"]);
-
   return (
     <View
-      className="flex-1"
-      style={themes[colorScheme ?? "light"]}>
+      className="flex-1 bg-background"
+      style={themes[colorScheme ?? "light"] as StyleProp<ViewStyle>}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={`hsl(${themeDatas[colorScheme ?? "light"]["primary"]})`}
+      />
       <ThemeProvider value={reactNavigationThemes(colorScheme === "dark")}>
         <UserProvider>
           <Toaster />

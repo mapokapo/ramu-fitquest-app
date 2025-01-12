@@ -48,8 +48,6 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({
   }, []);
 
   useEffect(() => {
-    console.log("settings", settings);
-
     if (settings.loaded) {
       AsyncStorage.setItem("settings", JSON.stringify(settings.data));
     }

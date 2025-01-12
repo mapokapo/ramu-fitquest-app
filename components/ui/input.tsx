@@ -1,4 +1,4 @@
-import { themes } from "@/lib/const/color-theme";
+import { themeDatas } from "@/lib/const/color-theme";
 import { cn } from "@/lib/utils";
 import { useColorScheme } from "nativewind";
 import React from "react";
@@ -64,7 +64,7 @@ const Input: React.FC<InputProps> = ({
           {leftIcon !== undefined
             ? leftIcon({
                 size: 24,
-                color: `hsl(${themes[colorScheme ?? "light"]["--foreground"]})`,
+                color: `hsl(${themeDatas[colorScheme ?? "light"]["foreground"]})`,
               })
             : null}
         </View>
@@ -75,7 +75,7 @@ const Input: React.FC<InputProps> = ({
               className: textInputClassName,
             })
           )}
-          placeholderClassName="text-muted-foreground"
+          placeholderTextColor={`hsl(${themeDatas[colorScheme ?? "light"]["muted-foreground"]})`}
           {...props}
         />
       </View>
