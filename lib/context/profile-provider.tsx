@@ -155,25 +155,20 @@ export function useProfile() {
   return context;
 }
 
-export function useAppProfile(): AsyncValue<Tables<"profiles">> {
+export function useAppProfile(): Tables<"profiles"> {
   const { profile } = useProfile();
 
-  if (profile.loaded) {
-    const data = profile.data;
-
-    if (data === null) {
-      throw new Error(
-        "useAppProfile must be used within a ProfileProvider that has non-null profile data"
-      );
-    }
-
-    return {
-      loaded: true,
-      data,
-    };
-  } else {
-    return {
-      loaded: false,
-    };
+  if (!profile.loaded) {
+    throw new Error(
+      "useAppProfile must be used within a ProfileProvider that has loaded profile data"
+    );
   }
+
+  if (profile.data === null) {
+    throw new Error(
+      "useAppProfile must be used within a ProfileProvider that has non-null profile data"
+    );
+  }
+
+  return profile.data;
 }
