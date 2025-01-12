@@ -77,59 +77,49 @@ export default function Izazovi() {
 
   useEffect(() => {
     async function fetchDailyChallengeProgress(dailyChallengeId: number) {
-      let data: Tables<"user_challenges">;
-      const { data: existingUserChallenge, error: existingUserChallengeError } =
-        await supabase
-          .from("user_challenges")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("daily_challenge_id", dailyChallengeId)
-          .maybeSingle();
+      const { data, error } = await supabase
+        .from("user_challenges")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("daily_challenge_id", dailyChallengeId)
+        .maybeSingle();
 
-      if (existingUserChallengeError) {
-        const message = mapError(existingUserChallengeError);
+      if (error) {
+        const message = mapError(error);
         toast({
           title:
             "Greška pri dohvaćanju vašeg napretka prema postignuću izazova",
           message: message,
         });
-        console.error(
-          "Error fetching user challenge progress:",
-          existingUserChallengeError
-        );
+        console.error("Error fetching user challenge progress:", error);
         return;
       }
 
-      if (existingUserChallenge === null) {
-        const { data: newUserChallenge, error: newUserChallengeError } =
-          await supabase
-            .from("user_challenges")
-            .insert({
-              user_id: user.id,
-              daily_challenge_id: dailyChallengeId,
-              progress: 0,
-            })
-            .single();
+      if (data === null) {
+        const { data: newData, error: newError } = await supabase
+          .from("user_challenges")
+          .insert({
+            user_id: user.id,
+            daily_challenge_id: dailyChallengeId,
+            progress: 0,
+          })
+          .select()
+          .single();
 
-        if (newUserChallengeError) {
-          const message = mapError(newUserChallengeError);
+        if (newError) {
+          const message = mapError(newError);
           toast({
             title: "Greška pri kreiranju vašeg napretka prema izazovu",
             message: message,
           });
-          console.error(
-            "Error creating user challenge progress:",
-            newUserChallengeError
-          );
+          console.error("Error creating user challenge progress:", newError);
           return;
         }
 
-        data = newUserChallenge;
+        setChallengeProgress({ loaded: true, data: newData });
       } else {
-        data = existingUserChallenge;
+        setChallengeProgress({ loaded: true, data });
       }
-
-      setChallengeProgress({ loaded: true, data });
     }
 
     if (dailyChallenge.loaded) {
@@ -142,18 +132,22 @@ export default function Izazovi() {
       return;
     }
 
+    const newProgress = Math.min(
+      Math.max(
+        Math.floor(
+          challengeProgress.data.progress + dailyChallenge.data.units * 0.2
+        ),
+        0
+      ),
+      dailyChallenge.data.units
+    );
+
     const { error } = await supabase
       .from("user_challenges")
       .update({
         user_id: user.id,
         daily_challenge_id: dailyChallenge.data.id,
-        progress:
-          challengeProgress.data.progress < dailyChallenge.data.units
-            ? Math.floor(
-                challengeProgress.data.progress +
-                  dailyChallenge.data.units * 0.2
-              )
-            : dailyChallenge.data.units,
+        progress: newProgress,
       })
       .eq("user_id", user.id)
       .eq("daily_challenge_id", dailyChallenge.data.id);
@@ -175,10 +169,7 @@ export default function Izazovi() {
         loaded: true,
         data: {
           ...prev.data,
-          progress:
-            prev.data.progress < dailyChallenge.data.units
-              ? Math.floor(prev.data.progress + dailyChallenge.data.units * 0.2)
-              : dailyChallenge.data.units,
+          progress: newProgress,
         },
       };
     });
