@@ -37,7 +37,7 @@ function ProfileLoader() {
   if (profile.loaded) {
     if (profile.data === null && pathname !== "/create-profile") {
       return <Redirect href="/create-profile" />;
-    } else if (profile.data !== null) {
+    } else if (profile.data !== null && pathname === "/create-profile") {
       return <Redirect href="/" />;
     }
   } else {
