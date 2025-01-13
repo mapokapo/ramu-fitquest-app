@@ -62,7 +62,7 @@ export default function CreateProfile() {
       </Text>
       <View style={styles.centerImage}>
         <Image style={styles.profilePicture} source={{uri: profile.profile_picture_url ?? 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}}/>
-        <Text onPress={handleChangePhoto}>Promjeni sliku</Text>
+        <Text className="text-foreground" onPress={handleChangePhoto}>Promjeni sliku</Text>
       </View>
       <Input
         label="Ime"

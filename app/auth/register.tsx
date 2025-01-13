@@ -10,28 +10,40 @@ import { Ionicons } from "@expo/vector-icons";
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
   async function handleRegister() {
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      const message = mapError(error);
-      setError(message);
+    if (password != confirmPassword) {
+      setError('Lozinke se ne podudaraju!');
       toast({
         title: "Greška prilikom registracije",
-        message: message,
+        message: 'Lozinke se ne podudaraju!',
       });
-      console.error("Error signing up:", error);
+      console.error("Error signing up: Lozinke se ne podudaraju!");
     }
+    
+    else{
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    setLoading(false);
+      if (error) {
+        const message = mapError(error);
+        setError(message);
+        toast({
+          title: "Greška prilikom registracije",
+          message: message,
+        });
+        console.error("Error signing up:", error);
+      }
+
+      setLoading(false);
+    }
   }
 
   return (
@@ -64,6 +76,21 @@ export default function Register() {
         )}
         onChangeText={text => setPassword(text)}
         value={password}
+        secureTextEntry={true}
+        autoCapitalize="none"
+      />
+      <Input
+        label="PotvrdiLozinku"
+        placeholder="Potvrdi lozinku"
+        leftIcon={({ size, color }) => (
+          <Ionicons
+            name="key"
+            size={size}
+            color={color}
+          />
+        )}
+        onChangeText={text => setConfirmPassword(text)}
+        value={confirmPassword}
         secureTextEntry={true}
         autoCapitalize="none"
       />

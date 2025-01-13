@@ -229,6 +229,14 @@ export default function Profile() {
       </Text>
       <Button title="Uredite profil" onPress={toEditProfile}/>
 
+      
+      <Button
+        title="Odjavi se"
+        onPress={() => {
+          supabase.auth.signOut();
+        }}
+      />
+
       <div id='Spacer' style={styles.Spacer}></div>
 
       <Text className="text-xl font-bold text-foreground">Današnji izazov</Text>
@@ -261,7 +269,7 @@ export default function Profile() {
           Vaš današnji izazov se učitava...
         </Text>
       )}
-      <Button title="Go to izazovi" onPress={toIzazovi}/>
+      <Button title="Više o izazovima..." onPress={toIzazovi}/>
     </View>
   );
 }
