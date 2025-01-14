@@ -7,8 +7,8 @@ import { mapError } from "@/lib/utils";
 import { toast } from "burnt";
 import { useAppUser } from "@/lib/context/user-provider";
 import { useEffect, useState } from "react";
-import { Text, View, StyleSheet, Image } from "react-native";
-import { useRouter } from "expo-router";
+import { Text, View, Image } from "react-native";
+import { Link } from "expo-router";
 
 const challengesTranslationMap = (
   challengeCode: string,
@@ -39,11 +39,6 @@ const challengesTranslationMap = (
 export default function Profile() {
   const user = useAppUser();
   const profile = useAppProfile();
-  const [place, setPlace] = useState(0);
-  const router = useRouter();
-  const [leaderboard, setLeaderboard] = useState<
-    AsyncValue<Tables<"profiles">[]>
-  >({ loaded: false });
 
   const [dailyChallenge, setDailyChallenge] = useState<
     AsyncValue<
@@ -57,6 +52,9 @@ export default function Profile() {
   const [challengeProgress, setChallengeProgress] = useState<
     AsyncValue<Tables<"user_challenges">>
   >({
+    loaded: false,
+  });
+  const [userPosition, setUserPosition] = useState<AsyncValue<number>>({
     loaded: false,
   });
 
@@ -137,64 +135,33 @@ export default function Profile() {
     }
   }, [dailyChallenge, user]);
 
-  const fetchLeaderboard = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("points", { ascending: false })
-      .limit(50);
+  const fetchUserPosition = async (userId: string) => {
+    const { data, error } = await supabase.rpc(
+      "get_user_leaderboard_position",
+      {
+        user_id: userId,
+      }
+    );
 
     if (error) {
       const message = mapError(error);
       toast({
-        title: "Greška pri dohvaćanju ljestvice",
+        title: "Greška pri dohvaćanju pozicije",
         message: message,
       });
-      console.error("Error fetching leaderboard:", error);
+      console.error("Error fetching user position:", error);
       return;
     }
 
-    setLeaderboard({
+    setUserPosition({
       loaded: true,
       data,
     });
   };
 
   useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
-  useEffect(() => {
-    setLeaderboard(prev => {
-      if (!prev.loaded) return prev;
-      if (!prev.data.some(u => u.id === profile.id)) return prev;
-
-      return {
-        loaded: true,
-        data: prev.data.map(u => (u.id === profile.id ? profile : u)),
-      };
-    });
+    fetchUserPosition(profile.id);
   }, [profile]);
-
-  const getPlace = () => {
-    if (leaderboard.loaded) {
-      let i = 0;
-      while (place === 0 && i < leaderboard.data.length) {
-        if (leaderboard.data[i].name === profile.name) {
-          setPlace(i + 1);
-          break;
-        } else i++;
-      }
-    }
-  };
-
-  const toEditProfile = () => {
-    router.replace("/editProfile");
-  };
-
-  const toIzazovi = () => {
-    router.replace("/izazovi");
-  };
 
   const handleDeleteAccount = async () => {
     let i = confirm("Jeste li sigurni da želite izbrisati profil?");
@@ -215,50 +182,31 @@ export default function Profile() {
     }
   };
 
-  const styles = StyleSheet.create({
-    profilePicture: {
-      borderRadius: 50,
-      height: 100,
-      width: 100,
-      backgroundColor: "#010101",
-    },
-    userID: {
-      color: "grey",
-    },
-    Container: {
-      display: "flex",
-      alignItems: "center",
-    },
-    Spacer: {
-      height: 40,
-    },
-  });
-
   return (
-    <View
-      className="flex-1 gap-2 bg-background p-8"
-      style={styles.Container}>
+    <View className="flex-1 items-center gap-2 bg-background p-8">
       <Image
-        style={styles.profilePicture}
+        className="h-32 w-32 rounded-full"
         source={{
-          uri:
-            profile.profile_picture_url ??
-            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+          uri: profile.profile_picture_url ?? "",
+        }}
+        defaultSource={{
+          uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
         }}
       />
       <Text className="text-xl font-bold text-foreground">{profile.name}</Text>
-      <Text style={styles.userID}>{profile.id}</Text>
-
+      <Text className="text-muted-foreground">{profile.id}</Text>
       <Text className="text-foreground">Email: {user.email}</Text>
       <Text className="text-foreground">Vaši poeni: {profile.points}</Text>
-      <Text className="text-foreground">
-        Pozicija u Leaderboardu:
-        {leaderboard.loaded ? (getPlace() ?? " " + place) : " " + 0}
-      </Text>
-      <Button
-        title="Uredite profil"
-        onPress={toEditProfile}
-      />
+      {userPosition.loaded && (
+        <Text className="text-foreground">
+          Pozicija u Leaderboardu: {userPosition.data}
+        </Text>
+      )}
+      <Link
+        href="/editProfile"
+        asChild>
+        <Button title="Uredite profil" />
+      </Link>
 
       <Button
         title="Odjavi se"
@@ -270,10 +218,6 @@ export default function Profile() {
         title="Izbrisati profil?"
         onPress={handleDeleteAccount}
       />
-
-      <div
-        id="Spacer"
-        style={styles.Spacer}></div>
 
       <Text className="text-xl font-bold text-foreground">Današnji izazov</Text>
       {dailyChallenge.loaded ? (
@@ -305,10 +249,11 @@ export default function Profile() {
           Vaš današnji izazov se učitava...
         </Text>
       )}
-      <Button
-        title="Više o izazovima..."
-        onPress={toIzazovi}
-      />
+      <Link
+        href="/izazovi"
+        asChild>
+        <Button title="Više o izazovima..." />
+      </Link>
     </View>
   );
 }
