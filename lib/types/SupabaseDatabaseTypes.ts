@@ -140,6 +140,10 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
+      delete_your_account: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
       get_user_leaderboard_position: {
         Args: {
           user_id: string;
