@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Text, View, Image, StyleSheet, Modal, Alert } from "react-native";
+import { Text, View, Image, StyleSheet } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useAppUser } from "@/lib/context/user-provider";
 import { mapError } from "@/lib/utils";
@@ -25,9 +25,9 @@ export default function CreateProfile() {
       backgroundColor: "#010101",
     },
     centerImage: {
-      display: 'flex',
-      alignItems: 'center',
-    }
+      display: "flex",
+      alignItems: "center",
+    },
   });
 
   async function handleUpdateProfile() {
@@ -36,7 +36,7 @@ export default function CreateProfile() {
     const { error } = await supabase
       .from("profiles")
       .update({ name: name, profile_picture_url: imageUrl })
-      .eq('id', profile.id);
+      .eq("id", profile.id);
 
     if (error) {
       const message = mapError(error);
@@ -53,7 +53,7 @@ export default function CreateProfile() {
 
   const handleChangePhoto = () => {
     setImageUrl(prompt("Unesite novi url slike: "));
-  }
+  };
 
   return (
     <View className="flex-1 gap-4 bg-background p-8">
@@ -61,8 +61,19 @@ export default function CreateProfile() {
         Uredite profil
       </Text>
       <View style={styles.centerImage}>
-        <Image style={styles.profilePicture} source={{uri: profile.profile_picture_url ?? 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}}/>
-        <Text className="text-foreground" onPress={handleChangePhoto}>Promjeni sliku</Text>
+        <Image
+          style={styles.profilePicture}
+          source={{
+            uri:
+              profile.profile_picture_url ??
+              "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+          }}
+        />
+        <Text
+          className="text-foreground"
+          onPress={handleChangePhoto}>
+          Promjeni sliku
+        </Text>
       </View>
       <Input
         label="Ime"

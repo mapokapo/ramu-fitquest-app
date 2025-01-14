@@ -41,10 +41,11 @@ export default function Profile() {
   const profile = useAppProfile();
   const [place, setPlace] = useState(0);
   const router = useRouter();
-  const [leaderboard, setLeaderboard] = 
-    useState<AsyncValue<Tables<"profiles">[]>>({loaded: false,});
-  
-    const [dailyChallenge, setDailyChallenge] = useState<
+  const [leaderboard, setLeaderboard] = useState<
+    AsyncValue<Tables<"profiles">[]>
+  >({ loaded: false });
+
+  const [dailyChallenge, setDailyChallenge] = useState<
     AsyncValue<
       Tables<"daily_challenges"> & {
         challenge: Tables<"challenges">;
@@ -135,34 +136,32 @@ export default function Profile() {
       fetchDailyChallengeProgress(dailyChallenge.data.id);
     }
   }, [dailyChallenge, user]);
-  
+
   const fetchLeaderboard = async () => {
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .order("points", { ascending: false })
       .limit(50);
-  
-      if (error) {
-        const message = mapError(error);
-        toast({
-          title: "Greška pri dohvaćanju ljestvice",
-          message: message,
-        });
-        console.error("Error fetching leaderboard:", error);
-        return;
-      }
-  
-      setLeaderboard({
-        loaded: true,
-        data,
-      });
-    };
 
-    
+    if (error) {
+      const message = mapError(error);
+      toast({
+        title: "Greška pri dohvaćanju ljestvice",
+        message: message,
+      });
+      console.error("Error fetching leaderboard:", error);
+      return;
+    }
+
+    setLeaderboard({
+      loaded: true,
+      data,
+    });
+  };
 
   useEffect(() => {
-      fetchLeaderboard();
+    fetchLeaderboard();
   }, []);
 
   useEffect(() => {
@@ -178,43 +177,43 @@ export default function Profile() {
   }, [profile]);
 
   const getPlace = () => {
-    if(leaderboard.loaded){
+    if (leaderboard.loaded) {
       let i = 0;
-      while(place == 0 && i < leaderboard.data.length){
-        if(leaderboard.data[i].name == profile.name){
-          setPlace(i+1);
+      while (place === 0 && i < leaderboard.data.length) {
+        if (leaderboard.data[i].name === profile.name) {
+          setPlace(i + 1);
           break;
-        }else i++;
+        } else i++;
       }
     }
-  }
+  };
 
   const toEditProfile = () => {
-    router.replace('/editProfile')
-  }
+    router.replace("/editProfile");
+  };
 
   const toIzazovi = () => {
-    router.replace('/izazovi')
-  }
+    router.replace("/izazovi");
+  };
 
   const handleDeleteAccount = async () => {
     let i = confirm("Jeste li sigurni da želite izbrisati profil?");
-    if(!i)console.log("Brisanje profila prekinuto.");
-    else{
-      let confirmDeletion = prompt("Ako ste sigurni da želite izbrisati profil, napišite 'DELETE'\nPodsjetnik: Pazite na velika i mala slova.");
-      if(confirmDeletion !== "DELETE")console.log("Brisanje profila prekinuto.");
-      else{
-        try{
-          await supabase
-                  .from('profiles')
-                  .delete()
-                  .eq('id', profile.id);
-        }catch(error){
+    if (!i) console.log("Brisanje profila prekinuto.");
+    else {
+      let confirmDeletion = prompt(
+        "Ako ste sigurni da želite izbrisati profil, napišite 'DELETE'\nPodsjetnik: Pazite na velika i mala slova."
+      );
+      if (confirmDeletion !== "DELETE")
+        console.log("Brisanje profila prekinuto.");
+      else {
+        try {
+          await supabase.from("profiles").delete().eq("id", profile.id);
+        } catch (error) {
           console.log(error);
         }
       }
     }
-  }
+  };
 
   const styles = StyleSheet.create({
     profilePicture: {
@@ -224,40 +223,57 @@ export default function Profile() {
       backgroundColor: "#010101",
     },
     userID: {
-      color: 'grey',
+      color: "grey",
     },
     Container: {
-      display: 'flex',
-      alignItems: 'center',
+      display: "flex",
+      alignItems: "center",
     },
     Spacer: {
       height: 40,
-    }
+    },
   });
 
   return (
-    <View className="flex-1 gap-2 bg-background p-8" style={styles.Container}>
-      <Image style={styles.profilePicture} source={{uri: profile.profile_picture_url ?? 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}}/>
+    <View
+      className="flex-1 gap-2 bg-background p-8"
+      style={styles.Container}>
+      <Image
+        style={styles.profilePicture}
+        source={{
+          uri:
+            profile.profile_picture_url ??
+            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+        }}
+      />
       <Text className="text-xl font-bold text-foreground">{profile.name}</Text>
       <Text style={styles.userID}>{profile.id}</Text>
-      
+
       <Text className="text-foreground">Email: {user.email}</Text>
       <Text className="text-foreground">Vaši poeni: {profile.points}</Text>
-      <Text className="text-foreground">Pozicija u Leaderboardu: 
-      {leaderboard.loaded ? (getPlace() ?? ' ' + place) : ' ' + 0}
+      <Text className="text-foreground">
+        Pozicija u Leaderboardu:
+        {leaderboard.loaded ? (getPlace() ?? " " + place) : " " + 0}
       </Text>
-      <Button title="Uredite profil" onPress={toEditProfile}/>
+      <Button
+        title="Uredite profil"
+        onPress={toEditProfile}
+      />
 
-      
       <Button
         title="Odjavi se"
         onPress={() => {
           supabase.auth.signOut();
         }}
       />
-      <Button title="Izbrisati profil?" onPress={handleDeleteAccount}/>
+      <Button
+        title="Izbrisati profil?"
+        onPress={handleDeleteAccount}
+      />
 
-      <div id='Spacer' style={styles.Spacer}></div>
+      <div
+        id="Spacer"
+        style={styles.Spacer}></div>
 
       <Text className="text-xl font-bold text-foreground">Današnji izazov</Text>
       {dailyChallenge.loaded ? (
@@ -289,7 +305,10 @@ export default function Profile() {
           Vaš današnji izazov se učitava...
         </Text>
       )}
-      <Button title="Više o izazovima..." onPress={toIzazovi}/>
+      <Button
+        title="Više o izazovima..."
+        onPress={toIzazovi}
+      />
     </View>
   );
 }

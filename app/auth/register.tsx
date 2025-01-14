@@ -17,16 +17,14 @@ export default function Register() {
   async function handleRegister() {
     setLoading(true);
 
-    if (password != confirmPassword) {
-      setError('Lozinke se ne podudaraju!');
+    if (password !== confirmPassword) {
+      setError("Lozinke se ne podudaraju!");
       toast({
         title: "Greška prilikom registracije",
-        message: 'Lozinke se ne podudaraju!',
+        message: "Lozinke se ne podudaraju!",
       });
       console.error("Error signing up: Lozinke se ne podudaraju!");
-    }
-    
-    else{
+    } else {
       const { error } = await supabase.auth.signUp({
         email,
         password,
