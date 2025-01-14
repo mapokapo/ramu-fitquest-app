@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Text, View, Image, StyleSheet } from "react-native";
+import { Text, View, Image } from "react-native";
 import { supabase } from "@/lib/supabase";
-import { useAppUser } from "@/lib/context/user-provider";
 import { mapError } from "@/lib/utils";
 import { toast } from "burnt";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,25 +9,11 @@ import Button from "@/components/ui/button";
 import { useAppProfile } from "@/lib/context/profile-provider";
 
 export default function CreateProfile() {
-  const user = useAppUser();
   const profile = useAppProfile();
   const [imageUrl, setImageUrl] = useState(profile.profile_picture_url);
   const [name, setName] = useState(profile.name);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
-
-  const styles = StyleSheet.create({
-    profilePicture: {
-      borderRadius: 50,
-      height: 100,
-      width: 100,
-      backgroundColor: "#010101",
-    },
-    centerImage: {
-      display: "flex",
-      alignItems: "center",
-    },
-  });
 
   async function handleUpdateProfile() {
     setLoading(true);
@@ -60,13 +45,14 @@ export default function CreateProfile() {
       <Text className="text-center text-2xl font-bold text-foreground">
         Uredite profil
       </Text>
-      <View style={styles.centerImage}>
+      <View className="items-center">
         <Image
-          style={styles.profilePicture}
+          className="h-32 w-32 rounded-full"
           source={{
-            uri:
-              profile.profile_picture_url ??
-              "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+            uri: imageUrl ?? "",
+          }}
+          defaultSource={{
+            uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
           }}
         />
         <Text
@@ -87,19 +73,6 @@ export default function CreateProfile() {
           />
         )}
         onChangeText={text => setName(text)}
-        autoCapitalize="words"
-      />
-      <Input
-        label="Ime"
-        placeholder="Unesite ime..."
-        value={user.email}
-        leftIcon={({ size, color }) => (
-          <Ionicons
-            name="person"
-            size={size}
-            color={color}
-          />
-        )}
         autoCapitalize="words"
       />
       {error !== null && <Text className="text-destructive">{error}</Text>}
