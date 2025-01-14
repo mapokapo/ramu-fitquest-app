@@ -8,7 +8,7 @@ import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
 import { useAppProfile } from "@/lib/context/profile-provider";
 
-export default function CreateProfile() {
+export default function EditProfile() {
   const profile = useAppProfile();
   const [imageUrl, setImageUrl] = useState(profile.profile_picture_url);
   const [name, setName] = useState(profile.name);

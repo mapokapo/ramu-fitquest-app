@@ -22,13 +22,6 @@ export default function AppDrawerLayout() {
           name="settings"
           options={{ title: "Settings" }}
         />
-        <Drawer.Screen
-          name="editProfile"
-          options={{
-            title: "Edit Profile",
-            drawerItemStyle: { display: "none" },
-          }}
-        />
       </Drawer>
     </GestureHandlerRootView>
   );

@@ -203,7 +203,7 @@ export default function Profile() {
         </Text>
       )}
       <Link
-        href="/editProfile"
+        href="/profile/edit"
         asChild>
         <Button title="Uredite profil" />
       </Link>
