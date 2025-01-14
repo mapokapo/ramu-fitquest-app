@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import React from "react";
-import { Pressable, PressableProps, Text } from "react-native";
+import React, { forwardRef } from "react";
+import { Pressable, PressableProps, Text, View } from "react-native";
 import { tv, type VariantProps } from "tailwind-variants";
 
 const buttonVariants = tv({
@@ -53,39 +53,38 @@ export interface ButtonProps
   title: string;
 }
 
-const Button: React.FC<ButtonProps> = ({
-  className,
-  variant,
-  size,
-  title,
-  ...props
-}) => {
-  return (
-    <Pressable
-      className={cn(
-        buttonVariants({
-          variant,
-          size,
-          className,
-        })
-      )}
-      {...props}>
-      {({ pressed }) => (
-        <Text
-          className={cn(
-            buttonTextVariants({
-              variant:
-                variant === "outline" && pressed
-                  ? "outline-pressed"
-                  : variant === "ghost" && pressed
-                    ? "ghost-pressed"
-                    : variant,
-            })
-          )}>
-          {title}
-        </Text>
-      )}
-    </Pressable>
-  );
-};
+const Button: React.FC<ButtonProps> = forwardRef<View, ButtonProps>(
+  ({ className, variant, size, title, ...props }, ref) => {
+    return (
+      <Pressable
+        ref={ref}
+        className={cn(
+          buttonVariants({
+            variant,
+            size,
+            className,
+          })
+        )}
+        {...props}>
+        {({ pressed }) => (
+          <Text
+            className={cn(
+              buttonTextVariants({
+                variant:
+                  variant === "outline" && pressed
+                    ? "outline-pressed"
+                    : variant === "ghost" && pressed
+                      ? "ghost-pressed"
+                      : variant,
+              })
+            )}>
+            {title}
+          </Text>
+        )}
+      </Pressable>
+    );
+  }
+);
+Button.displayName = "Button";
+
 export default Button;
