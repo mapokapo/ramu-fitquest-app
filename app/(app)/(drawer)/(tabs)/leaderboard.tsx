@@ -127,6 +127,7 @@ export default function Leaderboard() {
             onPress={() => {
               setLeaderboard({ loaded: false });
               fetchLeaderboard();
+              fetchUserPosition(profile.id);
             }}
           />
 
