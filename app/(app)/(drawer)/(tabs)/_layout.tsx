@@ -6,6 +6,9 @@ export default function AppTabsLayout() {
     <Tabs
       screenOptions={{
         headerShadowVisible: false,
+        tabBarStyle: {
+          borderColor: "transparent",
+        },
       }}>
       <Tabs.Screen
         name="index"
