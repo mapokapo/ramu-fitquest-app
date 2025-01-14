@@ -30,7 +30,6 @@ export default function EditProfile() {
       const { data, error: storageError } = await supabase.storage
         .from("avatars")
         .upload(`${profile.id}/profile_picture`, decode(image.base64), {
-          cacheControl: "3600",
           contentType: image.mimeType,
           upsert: true,
         });
@@ -52,7 +51,10 @@ export default function EditProfile() {
 
     const { error } = await supabase
       .from("profiles")
-      .update({ name: name, profile_picture_url: newImageUrl ?? undefined })
+      .update({
+        name: name,
+        profile_picture_url: newImageUrl ?? undefined,
+      })
       .eq("id", profile.id);
 
     if (error) {
@@ -66,6 +68,8 @@ export default function EditProfile() {
     }
 
     setLoading(false);
+
+    setHasChanges(false);
 
     router.back();
   };
@@ -106,9 +110,9 @@ export default function EditProfile() {
             uri:
               image !== null
                 ? typeof image === "string"
-                  ? image
+                  ? `${image}?${Date.now()}`
                   : image.uri
-                : "",
+                : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
           }}
           defaultSource={{
             uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",

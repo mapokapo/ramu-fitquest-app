@@ -186,7 +186,10 @@ export default function Profile() {
       <Image
         className="h-32 w-32 rounded-full"
         source={{
-          uri: profile.profile_picture_url ?? "",
+          uri:
+            profile.profile_picture_url !== null
+              ? `${profile.profile_picture_url}?${Date.now()}`
+              : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
         }}
         defaultSource={{
           uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
