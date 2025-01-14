@@ -1,26 +1,58 @@
 import { useState } from "react";
 import { Text, View, Image } from "react-native";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseConfig } from "@/lib/supabase";
 import { mapError } from "@/lib/utils";
 import { toast } from "burnt";
 import { Ionicons } from "@expo/vector-icons";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
 import { useAppProfile } from "@/lib/context/profile-provider";
+import * as ImagePicker from "expo-image-picker";
+import { decode } from "base64-arraybuffer";
+import { useRouter } from "expo-router";
 
 export default function EditProfile() {
   const profile = useAppProfile();
-  const [imageUrl, setImageUrl] = useState(profile.profile_picture_url);
+  const router = useRouter();
+  const [image, setImage] = useState<
+    string | null | (ImagePicker.ImagePickerAsset & { base64: string })
+  >(profile.profile_picture_url);
   const [name, setName] = useState(profile.name);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  async function handleUpdateProfile() {
+  const handleUpdateProfile = async () => {
     setLoading(true);
+
+    let newImageUrl = null;
+    if (image !== null && typeof image !== "string") {
+      const { data, error: storageError } = await supabase.storage
+        .from("avatars")
+        .upload(`${profile.id}/profile_picture`, decode(image.base64), {
+          cacheControl: "3600",
+          contentType: image.mimeType,
+          upsert: true,
+        });
+
+      if (storageError) {
+        const message = mapError(storageError);
+        setError(message);
+        toast({
+          title: "Greška prilikom promjene slike",
+          message: message,
+        });
+        console.error("Error uploading image:", storageError);
+        setLoading(false);
+        return;
+      }
+
+      newImageUrl = `${supabaseConfig.supabaseUrl}/storage/v1/object/public/${data.fullPath}`;
+    }
 
     const { error } = await supabase
       .from("profiles")
-      .update({ name: name, profile_picture_url: imageUrl })
+      .update({ name: name, profile_picture_url: newImageUrl ?? undefined })
       .eq("id", profile.id);
 
     if (error) {
@@ -34,10 +66,30 @@ export default function EditProfile() {
     }
 
     setLoading(false);
-  }
 
-  const handleChangePhoto = () => {
-    setImageUrl(prompt("Unesite novi url slike: "));
+    router.back();
+  };
+
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+      base64: true,
+    });
+
+    if (
+      !result.canceled &&
+      result.assets.length > 0 &&
+      result.assets[0].base64 !== undefined &&
+      result.assets[0].base64 !== null
+    ) {
+      setImage(
+        result.assets[0] as ImagePicker.ImagePickerAsset & { base64: string }
+      );
+      setHasChanges(true);
+    }
   };
 
   return (
@@ -45,22 +97,24 @@ export default function EditProfile() {
       <Text className="text-center text-2xl font-bold text-foreground">
         Uredite profil
       </Text>
-      <View className="items-center">
+      <Button
+        className="items-center"
+        onPress={handlePickImage}>
         <Image
           className="h-32 w-32 rounded-full"
           source={{
-            uri: imageUrl ?? "",
+            uri:
+              image !== null
+                ? typeof image === "string"
+                  ? image
+                  : image.uri
+                : "",
           }}
           defaultSource={{
             uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
           }}
         />
-        <Text
-          className="text-foreground"
-          onPress={handleChangePhoto}>
-          Promjeni sliku
-        </Text>
-      </View>
+      </Button>
       <Input
         label="Ime"
         placeholder="Unesite ime..."
@@ -72,13 +126,16 @@ export default function EditProfile() {
             color={color}
           />
         )}
-        onChangeText={text => setName(text)}
+        onChangeText={text => {
+          setName(text);
+          setHasChanges(true);
+        }}
         autoCapitalize="words"
       />
       {error !== null && <Text className="text-destructive">{error}</Text>}
       <Button
         title="Potvrdi izmjene"
-        disabled={loading}
+        disabled={loading || !hasChanges}
         onPress={() => handleUpdateProfile()}
       />
     </View>
