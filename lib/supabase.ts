@@ -10,6 +10,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase URL or Anon Key");
 }
 
+export const supabaseConfig = {
+  supabaseUrl,
+  supabaseAnonKey,
+};
+
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: AsyncStorage,

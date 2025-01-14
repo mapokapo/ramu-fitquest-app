@@ -17,6 +17,9 @@ export default function Leaderboard() {
   >({
     loaded: false,
   });
+  const [userPosition, setUserPosition] = useState<AsyncValue<number>>({
+    loaded: false,
+  });
 
   const fetchLeaderboard = async () => {
     const { data, error } = await supabase
@@ -41,6 +44,30 @@ export default function Leaderboard() {
     });
   };
 
+  const fetchUserPosition = async (userId: string) => {
+    const { data, error } = await supabase.rpc(
+      "get_user_leaderboard_position",
+      {
+        user_id: userId,
+      }
+    );
+
+    if (error) {
+      const message = mapError(error);
+      toast({
+        title: "Greška pri dohvaćanju pozicije",
+        message: message,
+      });
+      console.error("Error fetching user position:", error);
+      return;
+    }
+
+    setUserPosition({
+      loaded: true,
+      data,
+    });
+  };
+
   useEffect(() => {
     fetchLeaderboard();
   }, []);
@@ -55,17 +82,44 @@ export default function Leaderboard() {
         data: prev.data.map(u => (u.id === profile.id ? profile : u)),
       };
     });
+
+    fetchUserPosition(profile.id);
   }, [profile]);
+
+  useEffect(() => {
+    if (userPosition.loaded) {
+      setLeaderboard(prev => {
+        if (!prev.loaded) return prev;
+        if (!prev.data.some(u => u.id === profile.id)) return prev;
+
+        const newLeaderboard = [...prev.data];
+
+        const userIndex = newLeaderboard.findIndex(u => u.id === profile.id);
+        const user = newLeaderboard.splice(userIndex, 1)[0];
+        newLeaderboard.splice(userPosition.data - 1, 0, user);
+
+        return {
+          loaded: true,
+          data: newLeaderboard,
+        };
+      });
+    }
+  }, [profile.id, userPosition]);
 
   return (
     <View className="flex-1 bg-background p-8">
       {leaderboard.loaded ? (
         <View className="flex-1">
-          <View className="mb-4 rounded bg-muted p-4">
+          <View className="mb-4 justify-between rounded bg-muted p-4">
             <Text className="text-lg font-bold text-foreground">
               Vaši ukupni bodovi:{" "}
               {leaderboard.data.find(u => u.id === profile.id)?.points ?? 0}
             </Text>
+            {userPosition.loaded && (
+              <Text className="text-lg font-bold text-foreground">
+                Vaša pozicija: {userPosition.data}
+              </Text>
+            )}
           </View>
 
           <Button
@@ -73,6 +127,7 @@ export default function Leaderboard() {
             onPress={() => {
               setLeaderboard({ loaded: false });
               fetchLeaderboard();
+              fetchUserPosition(profile.id);
             }}
           />
 

@@ -118,14 +118,14 @@ export type Database = {
           {
             foreignKeyName: "user_challenges_daily_challenge_id_fkey";
             columns: ["daily_challenge_id"];
-            isOneToOne: true;
+            isOneToOne: false;
             referencedRelation: "daily_challenges";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "user_challenges_user_id_fkey";
             columns: ["user_id"];
-            isOneToOne: true;
+            isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -139,6 +139,16 @@ export type Database = {
       add_daily_challenge: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
+      };
+      delete_your_account: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
+      get_user_leaderboard_position: {
+        Args: {
+          user_id: string;
+        };
+        Returns: number;
       };
     };
     Enums: {
