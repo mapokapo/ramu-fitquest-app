@@ -39,9 +39,9 @@ export default function Register() {
         });
         console.error("Error signing up:", error);
       }
-
-      setLoading(false);
     }
+
+    setLoading(false);
   }
 
   return (
