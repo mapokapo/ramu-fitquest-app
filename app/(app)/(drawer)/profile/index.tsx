@@ -164,21 +164,20 @@ export default function Profile() {
   }, [profile]);
 
   const handleDeleteAccount = async () => {
-    let i = confirm("Jeste li sigurni da želite izbrisati profil?");
-    if (!i) console.log("Brisanje profila prekinuto.");
-    else {
-      let confirmDeletion = prompt(
-        "Ako ste sigurni da želite izbrisati profil, napišite 'DELETE'\nPodsjetnik: Pazite na velika i mala slova."
-      );
-      if (confirmDeletion !== "DELETE")
-        console.log("Brisanje profila prekinuto.");
-      else {
-        try {
-          await supabase.from("profiles").delete().eq("id", profile.id);
-        } catch (error) {
-          console.log(error);
-        }
-      }
+    try {
+      await supabase.storage
+        .from("avatars")
+        .remove([`${profile.id}/profile_picture`]);
+      await supabase.from("profiles").delete().eq("id", profile.id);
+      await supabase.rpc("delete_your_account");
+      await supabase.auth.signOut();
+    } catch (error) {
+      const message = mapError(error);
+      toast({
+        title: "Greška pri brisanju profila",
+        message: message,
+      });
+      console.error("Error deleting account:", error);
     }
   };
 
