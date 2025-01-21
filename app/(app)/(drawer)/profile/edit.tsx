@@ -10,6 +10,7 @@ import { useAppProfile } from "@/lib/context/profile-provider";
 import * as ImagePicker from "expo-image-picker";
 import { decode } from "base64-arraybuffer";
 import { useRouter } from "expo-router";
+import ProfilePicture from "@/components/ui/ProfilePicture";
 
 export default function EditProfile() {
   const profile = useAppProfile();
@@ -104,20 +105,7 @@ export default function EditProfile() {
       <Button
         className="items-center"
         onPress={handlePickImage}>
-        <Image
-          className="h-32 w-32 rounded-full"
-          source={{
-            uri:
-              image !== null
-                ? typeof image === "string"
-                  ? `${image}?${Date.now()}`
-                  : image.uri
-                : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-          }}
-          defaultSource={{
-            uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-          }}
-        />
+        <ProfilePicture profile_picture_url={profile.profile_picture_url}/>
       </Button>
       <Input
         label="Ime"

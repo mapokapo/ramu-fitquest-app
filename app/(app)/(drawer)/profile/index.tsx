@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { Text, View, Image } from "react-native";
 import { Link } from "expo-router";
 import { challengesTranslationMap } from "@/lib/const/challenges-translation-map";
+import ProfilePicture from "@/components/ui/ProfilePicture";
 
 export default function Profile() {
   const user = useAppUser();
@@ -158,18 +159,7 @@ export default function Profile() {
 
   return (
     <View className="flex-1 items-center gap-2 bg-background p-8">
-      <Image
-        className="h-32 w-32 rounded-full"
-        source={{
-          uri:
-            profile.profile_picture_url !== null
-              ? `${profile.profile_picture_url}?${Date.now()}`
-              : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-        }}
-        defaultSource={{
-          uri: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-        }}
-      />
+      <ProfilePicture profile_picture_url={profile.profile_picture_url}/>
       <Text className="text-xl font-bold text-foreground">{profile.name}</Text>
       <Text className="text-muted-foreground">{profile.id}</Text>
       <Text className="text-foreground">Email: {user.email}</Text>
