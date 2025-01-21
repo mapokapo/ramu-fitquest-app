@@ -1,41 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { View, Text } from "react-native";
+import { View, Text, Image } from "react-native";
 import Button from "@/components/ui/button";
 import { useAppUser } from "@/lib/context/user-provider";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseConfig } from "@/lib/supabase";
 import { toast } from "burnt";
 import AsyncValue from "@/lib/types/AsyncValue";
 import { Tables } from "@/lib/types/SupabaseDatabaseTypes";
 import { mapError } from "@/lib/utils";
-
-const challengesTranslationMap = (
-  challengeCode: string,
-  value: number
-): string | null => {
-  const map: Record<string, ((value: number) => string) | undefined> = {
-    walk_steps: (steps: number) => `Pređite ${steps} koraka`,
-    do_pushups: (pushups: number) => `Napravite ${pushups} sklekova`,
-    stretch_mins: (mins: number) => `Odradite ${mins} minuta istezanja`,
-    drink_water_mls: (mls: number) => `Popijte ${mls} ml vode`,
-    plank_mins: (mins: number) => `Odradite plank ${mins} minuta`,
-    read_pages: (pages: number) => `Pročitajte ${pages} stranica knjige`,
-    do_situps: (situps: number) => `Napravite ${situps} trbušnjaka`,
-    do_squats: (squats: number) => `Napravite ${squats} čučnjeva`,
-    walk_kms: (kms: number) => `Pređite ${kms} kilometara`,
-    do_yoga_mins: (mins: number) => `Odradite ${mins} minuta joge`,
-  };
-
-  const translation = map[challengeCode];
-
-  if (!translation) {
-    return null;
-  }
-
-  return translation(value);
-};
+import * as ImagePicker from "expo-image-picker";
+import { decode } from "base64-arraybuffer";
+import { Ionicons } from "@expo/vector-icons";
+import { themeDatas } from "@/lib/const/color-theme";
+import { useColorScheme } from "nativewind";
+import { challengesTranslationMap } from "@/lib/const/challenges-translation-map";
 
 export default function Izazovi() {
   const user = useAppUser();
+  const { colorScheme } = useColorScheme();
+
   const [dailyChallenge, setDailyChallenge] = useState<
     AsyncValue<
       Tables<"daily_challenges"> & {
@@ -50,6 +32,14 @@ export default function Izazovi() {
   >({
     loaded: false,
   });
+  const [image, setImage] = useState<
+    AsyncValue<
+      string | null | (ImagePicker.ImagePickerAsset & { base64: string })
+    >
+  >({
+    loaded: false,
+  });
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     async function fetchDailyChallenge() {
@@ -128,6 +118,15 @@ export default function Izazovi() {
     }
   }, [dailyChallenge, user]);
 
+  useEffect(() => {
+    if (
+      challengeProgress.loaded &&
+      challengeProgress.data.picture_url !== null
+    ) {
+      setImage({ loaded: true, data: challengeProgress.data.picture_url });
+    }
+  }, [challengeProgress]);
+
   const debug_addProgess = async () => {
     if (!dailyChallenge.loaded || !challengeProgress.loaded) {
       return;
@@ -176,6 +175,89 @@ export default function Izazovi() {
     });
   };
 
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+      base64: true,
+    });
+
+    if (
+      !result.canceled &&
+      result.assets.length > 0 &&
+      result.assets[0].base64 !== undefined &&
+      result.assets[0].base64 !== null
+    ) {
+      setImage({
+        loaded: true,
+        data: result.assets[0] as ImagePicker.ImagePickerAsset & {
+          base64: string;
+        },
+      });
+      setHasChanges(true);
+    }
+  };
+
+  const handleUploadChallengePicture = async () => {
+    if (!dailyChallenge.loaded || !challengeProgress.loaded) {
+      return;
+    }
+
+    let newImageUrl = null;
+    if (image.loaded && image.data !== null && typeof image.data !== "string") {
+      const { data, error: storageError } = await supabase.storage
+        .from("picture_challenges")
+        .upload(
+          `${user.id}/${challengeProgress.data.id}`,
+          decode(image.data.base64),
+          {
+            contentType: image.data.mimeType,
+            upsert: true,
+          }
+        );
+
+      if (storageError) {
+        const message = mapError(storageError);
+        toast({
+          title: "Greška prilikom uploada slike",
+          message: message,
+        });
+        console.error("Error uploading image:", storageError);
+        return;
+      }
+
+      newImageUrl = `${supabaseConfig.supabaseUrl}/storage/v1/object/public/${data.fullPath}`;
+    }
+
+    const { error } = await supabase
+      .from("user_challenges")
+      .update({
+        picture_url: newImageUrl ?? undefined,
+        progress: newImageUrl
+          ? dailyChallenge.data.units
+          : challengeProgress.data.progress,
+      })
+      .eq("id", challengeProgress.data.id);
+
+    if (error) {
+      const message = mapError(error);
+      toast({
+        title: "Greška prilikom ažuriranja slike izazova",
+        message: message,
+      });
+      console.error("Error updating challenge picture:", error);
+    }
+
+    setHasChanges(false);
+
+    toast({
+      title: "Slika uspješno ažurirana",
+      message: "Vaša slika je uspješno ažurirana!",
+    });
+  };
+
   return (
     <View className="flex-1 gap-8 bg-background p-8">
       <Text className="text-xl font-bold text-foreground">
@@ -190,20 +272,69 @@ export default function Izazovi() {
             ) ?? "Nepoznati izazov"}
           </Text>
           {challengeProgress.loaded ? (
-            <View>
-              <Text className="text-foreground">
-                Vaš napredak:{" "}
-                {Math.round(
-                  (challengeProgress.data.progress /
-                    dailyChallenge.data.units) *
-                    100
-                )}
-                % završen
-              </Text>
-              <Button
-                title="(DEBUG) Dodaj +20% na napredak na izazov"
-                onPress={debug_addProgess}
-              />
+            <View className="gap-4">
+              {dailyChallenge.data.challenge.challenge_code ===
+              "take_picture" ? (
+                image.loaded ? (
+                  image.data !== null && (
+                    <View className="items-center gap-2">
+                      <Text className="text-2xl font-bold text-foreground">
+                        Vaša slika:
+                      </Text>
+                      <Image
+                        className="h-32 w-32 rounded-full"
+                        source={{
+                          uri:
+                            typeof image.data === "string"
+                              ? `${image.data}?${Date.now()}`
+                              : image.data.uri,
+                        }}
+                      />
+                    </View>
+                  )
+                ) : (
+                  <View className="items-center gap-2">
+                    <Ionicons
+                      name="image-outline"
+                      size={128}
+                      color={`hsl(${themeDatas[colorScheme ?? "light"]["muted-foreground"]})`}
+                    />
+                    <Text className="text-foreground">
+                      Niste odabrali sliku
+                    </Text>
+                  </View>
+                )
+              ) : (
+                <Text className="text-foreground">
+                  Vaš napredak:{" "}
+                  {Math.round(
+                    (challengeProgress.data.progress /
+                      dailyChallenge.data.units) *
+                      100
+                  )}
+                  % završen
+                </Text>
+              )}
+              {dailyChallenge.data.challenge.challenge_code ===
+              "take_picture" ? (
+                <View className="gap-4">
+                  <Button
+                    title="Odaberite sliku"
+                    onPress={handlePickImage}
+                  />
+                  {hasChanges && (
+                    <Button
+                      title="Spasi sliku"
+                      onPress={handleUploadChallengePicture}
+                    />
+                  )}
+                </View>
+              ) : (
+                <Button
+                  title="(DEBUG) Dodaj +20% na napredak na izazov"
+                  onPress={debug_addProgess}
+                />
+              )}
             </View>
           ) : (
             <Text className="text-foreground">Vaš napredak se učitava...</Text>
