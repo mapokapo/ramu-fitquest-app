@@ -3,7 +3,6 @@ import { useAppUser } from "@/lib/context/user-provider"
 import { Image, View } from "react-native"
 
 export default function ProfilePicture(profile: { profile_picture_url: null | string, classname?: string; }){
-    console.log(profile.classname);
     return ( 
         <View>
             <Image
