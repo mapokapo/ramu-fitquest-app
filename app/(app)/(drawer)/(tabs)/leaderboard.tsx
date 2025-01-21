@@ -4,7 +4,7 @@ import { useAppProfile } from "@/lib/context/profile-provider";
 import { supabase } from "@/lib/supabase";
 import AsyncValue from "@/lib/types/AsyncValue";
 import { Tables } from "@/lib/types/SupabaseDatabaseTypes";
-import { mapError } from "@/lib/utils";
+import { insertAt, mapError } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { toast } from "burnt";
 import { useEffect, useState } from "react";
@@ -21,7 +21,7 @@ export default function Leaderboard() {
     loaded: false,
   });
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (profileId: string) => {
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
@@ -40,7 +40,7 @@ export default function Leaderboard() {
 
     setLeaderboard({
       loaded: true,
-      data,
+      data: data.filter(u => u.id !== profileId),
     });
   };
 
@@ -69,42 +69,8 @@ export default function Leaderboard() {
   };
 
   useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
-  useEffect(() => {
-    setLeaderboard(prev => {
-      if (!prev.loaded) return prev;
-      if (!prev.data.some(u => u.id === profile.id)) return prev;
-
-      return {
-        loaded: true,
-        data: prev.data.map(u => (u.id === profile.id ? profile : u)),
-      };
-    });
-
-    fetchUserPosition(profile.id);
+    fetchLeaderboard(profile.id).then(() => fetchUserPosition(profile.id));
   }, [profile]);
-
-  useEffect(() => {
-    if (userPosition.loaded) {
-      setLeaderboard(prev => {
-        if (!prev.loaded) return prev;
-        if (!prev.data.some(u => u.id === profile.id)) return prev;
-
-        const newLeaderboard = [...prev.data];
-
-        const userIndex = newLeaderboard.findIndex(u => u.id === profile.id);
-        const user = newLeaderboard.splice(userIndex, 1)[0];
-        newLeaderboard.splice(userPosition.data - 1, 0, user);
-
-        return {
-          loaded: true,
-          data: newLeaderboard,
-        };
-      });
-    }
-  }, [profile.id, userPosition]);
 
   return (
     <View className="flex-1 bg-background p-8">
@@ -112,8 +78,7 @@ export default function Leaderboard() {
         <View className="flex-1">
           <View className="mb-4 justify-between rounded bg-muted p-4">
             <Text className="text-lg font-bold text-foreground">
-              Vaši ukupni bodovi:{" "}
-              {leaderboard.data.find(u => u.id === profile.id)?.points ?? 0}
+              Vaši ukupni bodovi: {profile.points}
             </Text>
             {userPosition.loaded && (
               <Text className="text-lg font-bold text-foreground">
@@ -126,13 +91,17 @@ export default function Leaderboard() {
             title="Osvježi"
             onPress={() => {
               setLeaderboard({ loaded: false });
-              fetchLeaderboard();
+              fetchLeaderboard(profile.id);
               fetchUserPosition(profile.id);
             }}
           />
 
           <FlatList
-            data={leaderboard.data}
+            data={
+              userPosition.loaded
+                ? insertAt(leaderboard.data, profile, userPosition.data - 1)
+                : leaderboard.data
+            }
             keyExtractor={item => item.id.toString()}
             renderItem={({ item, index }) => (
               <LeaderboardItem

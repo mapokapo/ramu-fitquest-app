@@ -32,3 +32,7 @@ export const mapError = (error: unknown) => {
 
   return "Nepoznata greška.";
 };
+
+export const insertAt = <T>(array: T[], element: T, index: number): T[] => {
+  return [...array.slice(0, index), element, ...array.slice(index)];
+};

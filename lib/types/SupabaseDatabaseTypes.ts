@@ -97,6 +97,7 @@ export type Database = {
           created_at: string;
           daily_challenge_id: number;
           id: number;
+          picture_url: string | null;
           progress: number;
           user_id: string;
         };
@@ -104,6 +105,7 @@ export type Database = {
           created_at?: string;
           daily_challenge_id: number;
           id?: number;
+          picture_url?: string | null;
           progress?: number;
           user_id: string;
         };
@@ -111,6 +113,7 @@ export type Database = {
           created_at?: string;
           daily_challenge_id?: number;
           id?: number;
+          picture_url?: string | null;
           progress?: number;
           user_id?: string;
         };
