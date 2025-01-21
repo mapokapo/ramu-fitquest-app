@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { View, Text } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { toast } from "burnt";
-import ProfilePicture from "@/components/ui/ProfilePicture";
+import { ProfilePicture } from "@/components/profile-picture";
 import { mapError } from "@/lib/utils";
 import Button from "@/components/ui/button";
 import AsyncValue from "@/lib/types/AsyncValue";
@@ -108,9 +108,10 @@ export default function OdabraniProfil() {
         Profil korisnika: {profile.name}
         <br/><br/><br/>
         </Text>
-        <ProfilePicture profile_picture_url={profile.profile_picture_url} />
+        <ProfilePicture profilePictureUrl={profile.profile_picture_url} />
         <Text className="text-xl font-bold text-foreground">{profile.name}</Text>
-        <Text className="text-muted-foreground">ID: {profile.id}<br/><br/></Text>
+        <Text className="text-muted-foregroundđ">ID:</Text>
+        <Text className="text-muted-foregroundđ">{profile.id}<br/><br/></Text>
         <Text className="text-foreground">Osvojeni bodovi: {profile.points}</Text>
 
         {userPosition !== null && (
