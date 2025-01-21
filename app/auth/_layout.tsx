@@ -23,7 +23,13 @@ export default function AuthLayout() {
     return <Redirect href="/" />;
   } else {
     return (
-      <Tabs>
+      <Tabs
+        screenOptions={{
+          headerShadowVisible: false,
+          tabBarStyle: {
+            borderColor: "transparent",
+          },
+        }}>
         <Tabs.Screen
           name="index"
           options={{
