@@ -8,11 +8,10 @@ import { insertAt, mapError } from "@/lib/utils";
 import { Ionicons } from "@expo/vector-icons";
 import { toast } from "burnt";
 import { useEffect, useState } from "react";
-import { Text, View, FlatList, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import { Text, View, FlatList } from "react-native";
+import { Link } from "expo-router";
 
 export default function Leaderboard() {
-  const router = useRouter();
   const profile = useAppProfile();
   const [leaderboard, setLeaderboard] = useState<
     AsyncValue<Tables<"profiles">[]>
@@ -104,17 +103,17 @@ export default function Leaderboard() {
                 ? insertAt(leaderboard.data, profile, userPosition.data - 1)
                 : leaderboard.data
             }
-            keyExtractor={item => item.id.toString()}
+            keyExtractor={item => item.id}
             renderItem={({ item, index }) => (
-              <TouchableOpacity
-                onPress={() => router.push(`/odabraniProfil?id=${item.id}`)}
-              >
+              <Link
+                href={`/view-profile/${item.id}`}
+                className="w-full">
                 <LeaderboardItem
                   profile={item}
                   currentUser={item.id === profile.id}
                   index={index}
                 />
-              </TouchableOpacity>
+              </Link>
             )}
           />
         </View>
