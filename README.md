@@ -1,50 +1,47 @@
-# Welcome to your Expo app 👋
+# FitQuest
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Članovi tima
 
-## Get started
+- Dragan Arapović
+- Mate Marić
+- Leo Petrović
 
-1. Install dependencies
+## Opis
 
-   ```bash
-   npm install
-   ```
+> FitQuest je projekt za kolegij Razvoj Aplikacija za Mobilne Uređaje, na 3.
+> godini studija računarstva na FSRE, SUM.
 
-2. Start the app
+FitQuest je interaktivan i zabavan način motiviranja korisnika da održava zdrav
+životni stil.
 
-   ```bash
-    npx expo start
-   ```
+## Tehnologije
 
-In the output, you'll find options to open the app in a
+Aplikacija je rađena u React Native-u, koristeći Expo platformu za razvoj.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Za backend platformu se koristi Supabase.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Pokretanje projekta
 
-## Get a fresh project
+Projekt je moguće pokrenuti na lokalnom računalu koristeći Expo CLI.
 
-When you're ready, run:
+1. Instalirati pakete:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Pokrenuti Expo CLI:
 
-## Learn more
+```bash
+npm start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Aplikacija će se pokrenuti u web pregledniku nakon što kliknete dugme `w` u terminalu.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Aplikaciju je također moguće pokrenuti i na Android uređaju putem komande:
 
-## Join the community
+```bash
+npm run android
+```
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Morate imati instaliran JDK i Android Studio na računalu.
