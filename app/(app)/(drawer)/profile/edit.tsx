@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Text, View, Image } from "react-native";
+import { Text, View } from "react-native";
 import { supabase, supabaseConfig } from "@/lib/supabase";
 import { mapError } from "@/lib/utils";
 import { toast } from "burnt";
@@ -10,7 +10,7 @@ import { useAppProfile } from "@/lib/context/profile-provider";
 import * as ImagePicker from "expo-image-picker";
 import { decode } from "base64-arraybuffer";
 import { useRouter } from "expo-router";
-import ProfilePicture from "@/components/ui/ProfilePicture";
+import { ProfilePicture } from "@/components/profile-picture";
 
 export default function EditProfile() {
   const profile = useAppProfile();
@@ -105,7 +105,7 @@ export default function EditProfile() {
       <Button
         className="items-center"
         onPress={handlePickImage}>
-        <ProfilePicture profile_picture_url={profile.profile_picture_url}/>
+        <ProfilePicture profilePictureUrl={profile.profile_picture_url} />
       </Button>
       <Input
         label="Ime"

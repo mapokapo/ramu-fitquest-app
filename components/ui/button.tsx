@@ -12,7 +12,6 @@ const buttonVariants = tv({
       outline: "border border-input bg-background active:bg-accent",
       secondary: "bg-secondary",
       ghost: "bg-background",
-      delete: "bg-danger",
     },
     size: {
       default: "h-10 px-4 py-2",
@@ -38,7 +37,6 @@ const buttonTextVariants = tv({
       secondary: "text-secondary-foreground",
       ghost: "text-foreground",
       "ghost-pressed": "text-accent-foreground",
-      delete: "text-primary-foreground",
     },
     pressed: {
       true: "text-opacity-80",

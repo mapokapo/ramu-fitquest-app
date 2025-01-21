@@ -7,22 +7,14 @@ import { mapError } from "@/lib/utils";
 import { toast } from "burnt";
 import { useAppUser } from "@/lib/context/user-provider";
 import { useEffect, useState } from "react";
-import { Text, View, Image, StyleSheet } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { Link } from "expo-router";
 import { challengesTranslationMap } from "@/lib/const/challenges-translation-map";
-import ProfilePicture from "@/components/ui/ProfilePicture";
-import { ScrollView } from "react-native-gesture-handler";
+import { ProfilePicture } from "@/components/profile-picture";
 
 export default function Profile() {
   const user = useAppUser();
   const profile = useAppProfile();
-  
-  const styles = StyleSheet.create({
-    deleteButton: {
-      backgroundColor: 'red',
-      color: 'red'
-    }
-  });
 
   const [dailyChallenge, setDailyChallenge] = useState<
     AsyncValue<
@@ -167,49 +159,51 @@ export default function Profile() {
 
   return (
     <ScrollView>
-    <View className="flex-1 gap-2 bg-background p-8">
-      <View className="flex-1 items-center gap-0 bg-background p-4">
-        <ProfilePicture profile_picture_url={profile.profile_picture_url}/>
-        <Text className="text-xl font-bold text-foreground">{profile.name}</Text>
-        <Text className="text-muted-foreground text-xs">{profile.id}</Text>
-      </View><br/>
-      <Text className="text-foreground">Email: {user.email}</Text>
-      <Text className="text-foreground">Vaši poeni: {profile.points}</Text>
-      {userPosition.loaded && (
-        <Text className="text-foreground">
-          Pozicija u Leaderboardu: {userPosition.data}
-        </Text>
-      )}
-      <Link
-        href="/profile/edit"
-        asChild>
-        <Button title="Uredite profil" />
-      </Link>
+      <View className="flex-1 gap-2 bg-background p-8">
+        <View className="flex-1 items-center bg-background p-4">
+          <ProfilePicture profilePictureUrl={profile.profile_picture_url} />
+          <Text className="text-xl font-bold text-foreground">
+            {profile.name}
+          </Text>
+          <Text className="text-xs text-muted-foreground">{profile.id}</Text>
+        </View>
+        <Text className="text-foreground">Email: {user.email}</Text>
+        <Text className="text-foreground">Vaši poeni: {profile.points}</Text>
+        {userPosition.loaded && (
+          <Text className="text-foreground">
+            Pozicija u Leaderboardu: {userPosition.data}
+          </Text>
+        )}
+        <Link
+          href="/profile/edit"
+          asChild>
+          <Button title="Uredite profil" />
+        </Link>
 
-      <Button
-        title="Odjavi se"
-        onPress={() => {
-          supabase.auth.signOut();
-        }}
-      />
-      <Button
-        title="Izbrisati profil?"
-        onPress={handleDeleteAccount}
-        style={styles.deleteButton}
-        variant="delete"
-      />
-      <View className="flex-1 items-center gap-2 bg-background p-8">
-        <Text className="text-xl font-bold text-foreground">Današnji izazov</Text>
-        {dailyChallenge.loaded ? (
-          <View>
-            <Text className="mb-4 text-lg text-foreground">
-              {challengesTranslationMap(
-                dailyChallenge.data.challenge.challenge_code,
-                dailyChallenge.data.units
-              ) ?? "Nepoznati izazov"}
-            </Text>
-            {challengeProgress.loaded ? (
-              <View>
+        <Button
+          title="Odjavi se"
+          onPress={() => {
+            supabase.auth.signOut();
+          }}
+        />
+        <Button
+          title="Izbrisati profil?"
+          onPress={handleDeleteAccount}
+          variant="destructive"
+        />
+        <View className="flex-1 items-center gap-2 bg-background p-8">
+          <Text className="text-xl font-bold text-foreground">
+            Današnji izazov
+          </Text>
+          {dailyChallenge.loaded ? (
+            <View>
+              <Text className="mb-4 text-lg text-foreground">
+                {challengesTranslationMap(
+                  dailyChallenge.data.challenge.challenge_code,
+                  dailyChallenge.data.units
+                ) ?? "Nepoznati izazov"}
+              </Text>
+              {challengeProgress.loaded ? (
                 <Text className="text-foreground">
                   Vaš napredak:{" "}
                   {Math.round(
@@ -219,23 +213,24 @@ export default function Profile() {
                   )}
                   % završen
                 </Text>
-              </View>
-            ) : (
-              <Text className="text-foreground">Vaš napredak se učitava...</Text>
-            )}
-          </View>
-        ) : (
-          <Text className="text-foreground">
-            Vaš današnji izazov se učitava...
-          </Text>
-        )}
-        <Link
-          href="/izazovi"
-          asChild>
-          <Button title="Više o izazovima..." />
-        </Link>
+              ) : (
+                <Text className="text-foreground">
+                  Vaš napredak se učitava...
+                </Text>
+              )}
+            </View>
+          ) : (
+            <Text className="text-foreground">
+              Vaš današnji izazov se učitava...
+            </Text>
+          )}
+          <Link
+            href="/izazovi"
+            asChild>
+            <Button title="Više o izazovima..." />
+          </Link>
+        </View>
       </View>
-    </View>
     </ScrollView>
   );
 }
