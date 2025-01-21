@@ -78,8 +78,7 @@ export default function Leaderboard() {
         <View className="flex-1">
           <View className="mb-4 justify-between rounded bg-muted p-4">
             <Text className="text-lg font-bold text-foreground">
-              Vaši ukupni bodovi:{" "}
-              {leaderboard.data.find(u => u.id === profile.id)?.points ?? 0}
+              Vaši ukupni bodovi: {profile.points}
             </Text>
             {userPosition.loaded && (
               <Text className="text-lg font-bold text-foreground">
