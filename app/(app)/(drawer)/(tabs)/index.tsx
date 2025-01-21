@@ -9,11 +9,14 @@ export default function Home() {
 
   return (
     <View className="flex-1 gap-12 bg-background p-8">
-      <Text className="text-xl text-foreground">
-        Dobrodošli na <b>FitQuest!</b>
-        <br />
-        Jeste spremni za sljedeći izazov?
-      </Text>
+      <View className="gap-2">
+        <Text className="text-xl text-foreground">
+          Dobrodošli na <Text className="font-bold">FitQuest</Text>!
+        </Text>
+        <Text className="text-xl text-foreground">
+          Jeste spremni za sljedeći izazov?
+        </Text>
+      </View>
 
       <View className="flex-1 flex-row gap-8 bg-background p-8">
         <ProfilePicture

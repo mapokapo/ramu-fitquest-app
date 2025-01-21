@@ -103,11 +103,7 @@ export default function OdabraniProfil() {
         {profile.data.name}
       </Text>
       <Text className="text-muted-foreground">ID:</Text>
-      <Text className="text-muted-foreground">
-        {profile.data.id}
-        <br />
-        <br />
-      </Text>
+      <Text className="text-muted-foreground">{profile.data.id}</Text>
       <Text className="text-foreground">
         Osvojeni bodovi: {profile.data.points}
       </Text>
