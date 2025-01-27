@@ -36,3 +36,21 @@ export const mapError = (error: unknown) => {
 export const insertAt = <T>(array: T[], element: T, index: number): T[] => {
   return [...array.slice(0, index), element, ...array.slice(index)];
 };
+
+export const computeDistanceBetween = (
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number }
+) => {
+  const R = 6371e3; // metres
+  const φ1 = (a.latitude * Math.PI) / 180; // φ, λ in radians
+  const φ2 = (b.latitude * Math.PI) / 180;
+  const Δφ = ((b.latitude - a.latitude) * Math.PI) / 180;
+  const Δλ = ((b.longitude - a.longitude) * Math.PI) / 180;
+
+  const x =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+
+  return R * c; // in metres
+};
