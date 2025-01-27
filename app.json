@@ -34,6 +34,12 @@
         {
           "photosPermission": "The app accesses your photos to let you pick a profile picture."
         }
+      ],
+      [
+        "expo-location",
+        {
+          "isAndroidForegroundServiceEnabled": true
+        }
       ]
     ],
     "experiments": {
