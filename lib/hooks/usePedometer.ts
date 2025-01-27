@@ -1,16 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pedometer } from "expo-sensors";
 import AsyncValue from "@/lib/types/AsyncValue";
 import { toast } from "burnt";
 
-export const usePedometer = () => {
+export const usePedometer = (initialSteps: number) => {
   const [pedometerAvailable, setPedometerAvailable] = useState<
     AsyncValue<boolean>
   >({
     loaded: false,
   });
-  const [prevSteps, setPrevSteps] = useState<number>(0);
-  const [currentSteps, setCurrentSteps] = useState<number>(0);
+  const [currentSteps, setCurrentSteps] = useState<number>(initialSteps);
 
   useEffect(() => {
     if (!pedometerAvailable.loaded) return;
@@ -19,14 +18,13 @@ export const usePedometer = () => {
     return Pedometer.watchStepCount(result => {
       if (result.steps <= 1) return;
 
-      setCurrentSteps(result.steps - prevSteps);
+      setCurrentSteps(result.steps);
     }).remove;
-  }, [pedometerAvailable, prevSteps]);
+  }, [pedometerAvailable]);
 
   useEffect(() => {
-    setPrevSteps(currentSteps);
-    setCurrentSteps(0);
-  }, [currentSteps]);
+    setCurrentSteps(initialSteps);
+  }, [initialSteps]);
 
   useEffect(() => {
     async function checkPedometer() {
@@ -85,8 +83,5 @@ export const usePedometer = () => {
     checkPedometer();
   }, []);
 
-  return {
-    pedometerAvailable,
-    currentSteps,
-  };
+  return useMemo(() => ({ currentSteps }), [currentSteps]);
 };
