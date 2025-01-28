@@ -43,15 +43,7 @@ export default function Izazovi() {
   });
   const [hasChanges, setHasChanges] = useState(false);
   // currentSteps je broj koraka koje je korisnik napravio za trenutni izazov. Kada korisnik pravi korake, onda se vrijednost currentSteps povećava, no ova promjena je lokalna tj. ne ažurira se ništa na Supabase-u. Potrebno je dodati gumb "Pohrani promjene" ili koristiti useEffect kako bi se automatski detektiralo koliko često ažurirati podatke na Supabase-u (npr. nije potrebno ažurirati svaki korak ili svaki metar pređenog puta, već svakih 100 koraka ili 100 metara).
-  const { currentSteps } = usePedometer(
-    dailyChallenge.loaded
-      ? dailyChallenge.data.challenge.challenge_code !== "walk_steps"
-        ? 0
-        : challengeProgress.loaded
-          ? challengeProgress.data.progress
-          : 0
-      : 0
-  );
+  const { currentSteps } = usePedometer(0);
   const { currentDistance } = useDistance(
     dailyChallenge.loaded
       ? dailyChallenge.data.challenge.challenge_code !== "walk_kms"
@@ -61,6 +53,10 @@ export default function Izazovi() {
           : 0
       : 0
   );
+
+  useEffect(() => {
+    testFunc();
+  },[currentSteps])
 
   useEffect(() => {
     async function fetchDailyChallenge() {
@@ -279,6 +275,62 @@ export default function Izazovi() {
     });
   };
 
+  const [oldValue, setOldValue] = useState(0);
+
+  const testFunc = async () => {
+    if (!dailyChallenge.loaded || !challengeProgress.loaded) {
+      return;
+    }
+      if(currentSteps - 20 >= oldValue){
+        setOldValue(currentSteps);
+
+        if((currentSteps + challengeProgress.data.progress) > dailyChallenge.data.units){
+          const { error } = await supabase
+            .from("user_challenges")
+            .update({
+              user_id: user.id,
+              daily_challenge_id: dailyChallenge.data.id,
+              progress: (challengeProgress.data.progress + currentSteps),
+            })
+            .eq("user_id", user.id)
+            .eq("daily_challenge_id", dailyChallenge.data.id);
+
+            if (error) {
+              const message = mapError(error);
+              toast({
+                title: "Greška pri označavanju izazova kao završenog",
+                message: message,
+              });
+              console.error("Error completing daily challenge:", error);
+              return;
+            }
+        }
+        else{
+          const { error } = await supabase
+            .from("user_challenges")
+            .update({
+              user_id: user.id,
+              daily_challenge_id: dailyChallenge.data.id,
+              progress: (dailyChallenge.data.units),
+            })
+            .eq("user_id", user.id)
+            .eq("daily_challenge_id", dailyChallenge.data.id);
+
+            if (error) {
+              const message = mapError(error);
+              toast({
+                title: "Greška pri označavanju izazova kao završenog",
+                message: message,
+              });
+              console.error("Error completing daily challenge:", error);
+              return;
+            }
+        }
+  }  
+}
+
+  
+
   return (
     <View className="flex-1 gap-8 bg-background p-8">
       <Text className="text-xl font-bold text-foreground">
@@ -328,7 +380,7 @@ export default function Izazovi() {
               ) : dailyChallenge.data.challenge.challenge_code ===
                 "walk_steps" ? (
                 <Text className="text-foreground">
-                  Vaš napredak: {currentSteps}/{dailyChallenge.data.units}
+                  Vaš napredak: {currentSteps + challengeProgress.data.progress}/{dailyChallenge.data.units}
                 </Text>
               ) : dailyChallenge.data.challenge.challenge_code ===
                 "walk_kms" ? (
