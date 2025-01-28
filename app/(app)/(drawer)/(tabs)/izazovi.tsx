@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text } from "react-native";
 import Button from "@/components/ui/button";
 import { useAppUser } from "@/lib/context/user-provider";
 import { supabase, supabaseConfig } from "@/lib/supabase";
@@ -7,18 +7,13 @@ import { toast } from "burnt";
 import AsyncValue from "@/lib/types/AsyncValue";
 import { Tables } from "@/lib/types/SupabaseDatabaseTypes";
 import { mapError } from "@/lib/utils";
-import * as ImagePicker from "expo-image-picker";
-import { decode } from "base64-arraybuffer";
-import { Ionicons } from "@expo/vector-icons";
-import { themeDatas } from "@/lib/const/color-theme";
-import { useColorScheme } from "nativewind";
 import { challengesTranslationMap } from "@/lib/const/challenges-translation-map";
 import { usePedometer } from "@/lib/hooks/usePedometer";
 import { useDistance } from "@/lib/hooks/useDistance";
+import { CircularProgressBase } from "react-native-circular-progress-indicator";
 
 export default function Izazovi() {
   const user = useAppUser();
-  const { colorScheme } = useColorScheme();
 
   const [dailyChallenge, setDailyChallenge] = useState<
     AsyncValue<
@@ -29,36 +24,30 @@ export default function Izazovi() {
   >({
     loaded: false,
   });
+
   const [challengeProgress, setChallengeProgress] = useState<
     AsyncValue<Tables<"user_challenges">>
   >({
     loaded: false,
   });
-  const [image, setImage] = useState<
-    AsyncValue<
-      string | null | (ImagePicker.ImagePickerAsset & { base64: string })
-    >
-  >({
-    loaded: false,
-  });
-  const [hasChanges, setHasChanges] = useState(false);
-  // currentSteps je broj koraka koje je korisnik napravio za trenutni izazov. Kada korisnik pravi korake, onda se vrijednost currentSteps povećava, no ova promjena je lokalna tj. ne ažurira se ništa na Supabase-u. Potrebno je dodati gumb "Pohrani promjene" ili koristiti useEffect kako bi se automatski detektiralo koliko često ažurirati podatke na Supabase-u (npr. nije potrebno ažurirati svaki korak ili svaki metar pređenog puta, već svakih 100 koraka ili 100 metara).
+
   const { currentSteps } = usePedometer(
     dailyChallenge.loaded
       ? dailyChallenge.data.challenge.challenge_code !== "walk_steps"
         ? 0
         : challengeProgress.loaded
-          ? challengeProgress.data.progress
-          : 0
+        ? challengeProgress.data.progress
+        : 0
       : 0
   );
+
   const { currentDistance } = useDistance(
     dailyChallenge.loaded
       ? dailyChallenge.data.challenge.challenge_code !== "walk_kms"
         ? 0
         : challengeProgress.loaded
-          ? challengeProgress.data.progress * 1000
-          : 0
+        ? challengeProgress.data.progress * 1000
+        : 0
       : 0
   );
 
@@ -66,7 +55,7 @@ export default function Izazovi() {
     async function fetchDailyChallenge() {
       const { data, error } = await supabase
         .from("daily_challenges")
-        .select(`*, challenge:challenge_id(*)`)
+        .select("*, challenge:challenge_id(*)")
         .order("id", { ascending: false })
         .limit(1)
         .single();
@@ -99,8 +88,7 @@ export default function Izazovi() {
       if (error) {
         const message = mapError(error);
         toast({
-          title:
-            "Greška pri dohvaćanju vašeg napretka prema postignuću izazova",
+          title: "Greška pri dohvaćanju vašeg napretka prema postignuću izazova",
           message: message,
         });
         console.error("Error fetching user challenge progress:", error);
@@ -139,15 +127,6 @@ export default function Izazovi() {
     }
   }, [dailyChallenge, user]);
 
-  useEffect(() => {
-    if (
-      challengeProgress.loaded &&
-      challengeProgress.data.picture_url !== null
-    ) {
-      setImage({ loaded: true, data: challengeProgress.data.picture_url });
-    }
-  }, [challengeProgress]);
-
   const debug_addProgess = async () => {
     if (!dailyChallenge.loaded || !challengeProgress.loaded) {
       return;
@@ -183,7 +162,7 @@ export default function Izazovi() {
       return;
     }
 
-    setChallengeProgress(prev => {
+    setChallengeProgress((prev) => {
       if (!prev.loaded) return prev;
 
       return {
@@ -193,89 +172,6 @@ export default function Izazovi() {
           progress: newProgress,
         },
       };
-    });
-  };
-
-  const handlePickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-      base64: true,
-    });
-
-    if (
-      !result.canceled &&
-      result.assets.length > 0 &&
-      result.assets[0].base64 !== undefined &&
-      result.assets[0].base64 !== null
-    ) {
-      setImage({
-        loaded: true,
-        data: result.assets[0] as ImagePicker.ImagePickerAsset & {
-          base64: string;
-        },
-      });
-      setHasChanges(true);
-    }
-  };
-
-  const handleUploadChallengePicture = async () => {
-    if (!dailyChallenge.loaded || !challengeProgress.loaded) {
-      return;
-    }
-
-    let newImageUrl = null;
-    if (image.loaded && image.data !== null && typeof image.data !== "string") {
-      const { data, error: storageError } = await supabase.storage
-        .from("picture_challenges")
-        .upload(
-          `${user.id}/${challengeProgress.data.id}`,
-          decode(image.data.base64),
-          {
-            contentType: image.data.mimeType,
-            upsert: true,
-          }
-        );
-
-      if (storageError) {
-        const message = mapError(storageError);
-        toast({
-          title: "Greška prilikom uploada slike",
-          message: message,
-        });
-        console.error("Error uploading image:", storageError);
-        return;
-      }
-
-      newImageUrl = `${supabaseConfig.supabaseUrl}/storage/v1/object/public/${data.fullPath}`;
-    }
-
-    const { error } = await supabase
-      .from("user_challenges")
-      .update({
-        picture_url: newImageUrl ?? undefined,
-        progress: newImageUrl
-          ? dailyChallenge.data.units
-          : challengeProgress.data.progress,
-      })
-      .eq("id", challengeProgress.data.id);
-
-    if (error) {
-      const message = mapError(error);
-      toast({
-        title: "Greška prilikom ažuriranja slike izazova",
-        message: message,
-      });
-      console.error("Error updating challenge picture:", error);
-    }
-
-    setHasChanges(false);
-
-    toast({
-      title: "Slika uspješno ažurirana",
-      message: "Vaša slika je uspješno ažurirana!",
     });
   };
 
@@ -293,53 +189,30 @@ export default function Izazovi() {
             ) ?? "Nepoznati izazov"}
           </Text>
           {challengeProgress.loaded ? (
-            <View className="gap-4">
+            <View className="items-center gap-4 mt-6">
               {dailyChallenge.data.challenge.challenge_code ===
-              "take_picture" ? (
-                image.loaded ? (
-                  image.data !== null && (
-                    <View className="items-center gap-2">
-                      <Text className="text-2xl font-bold text-foreground">
-                        Vaša slika:
-                      </Text>
-                      <Image
-                        className="h-32 w-32 rounded-full"
-                        source={{
-                          uri:
-                            typeof image.data === "string"
-                              ? `${image.data}?${Date.now()}`
-                              : image.data.uri,
-                        }}
-                      />
-                    </View>
-                  )
-                ) : (
-                  <View className="items-center gap-2">
-                    <Ionicons
-                      name="image-outline"
-                      size={128}
-                      color={`hsl(${themeDatas[colorScheme ?? "light"]["muted-foreground"]})`}
-                    />
-                    <Text className="text-foreground">
-                      Niste odabrali sliku
-                    </Text>
-                  </View>
-                )
-              ) : dailyChallenge.data.challenge.challenge_code ===
-                "walk_steps" ? (
-                <Text className="text-foreground">
-                  Vaš napredak: {currentSteps}/{dailyChallenge.data.units}
-                </Text>
+              "walk_steps" ? (
+                <CircularProgressBase
+                  value={currentSteps}
+                  maxValue={dailyChallenge.data.units}
+                  radius={60}
+                  activeStrokeColor={"#4CAF50"}
+                  inActiveStrokeColor={"#D3D3D3"}
+                  inActiveStrokeOpacity={0.5}
+                />
               ) : dailyChallenge.data.challenge.challenge_code ===
                 "walk_kms" ? (
-                <Text className="text-foreground">
-                  Vaš napredak: {(currentDistance / 1000).toFixed(3)}/
-                  {dailyChallenge.data.units} km
-                </Text>
+                <CircularProgressBase
+                  value={currentDistance / 1000}
+                  maxValue={dailyChallenge.data.units}
+                  radius={60}
+                  activeStrokeColor={"#4CAF50"}
+                  inActiveStrokeColor={"#D3D3D3"}
+                  inActiveStrokeOpacity={0.5}
+                />
               ) : (
                 <Text className="text-foreground">
-                  Vaš napredak:{" "}
-                  {Math.round(
+                  Vaš napredak: {Math.round(
                     (challengeProgress.data.progress /
                       dailyChallenge.data.units) *
                       100
@@ -347,29 +220,26 @@ export default function Izazovi() {
                   % završen
                 </Text>
               )}
-              {dailyChallenge.data.challenge.challenge_code ===
-              "take_picture" ? (
-                <View className="gap-4">
-                  <Button
-                    title="Odaberite sliku"
-                    onPress={handlePickImage}
-                  />
-                  {hasChanges && (
-                    <Button
-                      title="Spasi sliku"
-                      onPress={handleUploadChallengePicture}
-                    />
+              <Text className="text-foreground text-center">
+                  Vaš napredak: {Math.round(
+                    (challengeProgress.data.progress /
+                      dailyChallenge.data.units) *
+                      100
                   )}
-                </View>
-              ) : (
+                  % završen<br />
+                  {currentSteps}/{dailyChallenge.data.units}
+                </Text>
+              <View className="mt-4">
                 <Button
                   title="(DEBUG) Dodaj +20% na napredak na izazov"
                   onPress={debug_addProgess}
                 />
-              )}
+              </View>
             </View>
           ) : (
-            <Text className="text-foreground">Vaš napredak se učitava...</Text>
+            <Text className="text-foreground">
+              Vaš napredak se učitava...
+            </Text>
           )}
         </View>
       ) : (
