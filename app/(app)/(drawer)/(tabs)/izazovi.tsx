@@ -120,6 +120,13 @@ export default function Izazovi() {
       } else {
         setChallengeProgress({ loaded: true, data });
       }
+
+      if (data && dailyChallenge.loaded && data.progress >= dailyChallenge.data.units) {
+        toast({
+          title: "Čestitamo, već ste završili dnevni izazov!",
+          message: "Posjetite nas sutra za novi izazov!",
+        });
+      }
     }
 
     if (dailyChallenge.loaded) {
@@ -152,6 +159,13 @@ export default function Izazovi() {
       .eq("user_id", user.id)
       .eq("daily_challenge_id", dailyChallenge.data.id);
 
+      if (newProgress >= dailyChallenge.data.units) {
+        toast({
+          title: "Čestitamo!",
+          message: "Završili ste dnevni izazov!",
+        });
+      }
+      
     if (error) {
       const message = mapError(error);
       toast({
