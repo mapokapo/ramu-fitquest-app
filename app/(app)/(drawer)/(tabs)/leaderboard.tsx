@@ -27,6 +27,7 @@ export default function Leaderboard() {
       .from("profiles")
       .select("*")
       .order("points", { ascending: false })
+      .order("name", { ascending: false })
       .limit(50);
 
     if (error) {
