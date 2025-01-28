@@ -10,7 +10,7 @@ import { mapError } from "@/lib/utils";
 import { challengesTranslationMap } from "@/lib/const/challenges-translation-map";
 import { usePedometer } from "@/lib/hooks/usePedometer";
 import { useDistance } from "@/lib/hooks/useDistance";
-import { CircularProgressBase } from "react-native-circular-progress-indicator";
+import CircularProgress from "react-native-circular-progress-indicator";
 
 export default function Izazovi() {
   const user = useAppUser();
@@ -203,26 +203,30 @@ export default function Izazovi() {
             ) ?? "Nepoznati izazov"}
           </Text>
           {challengeProgress.loaded ? (
-            <View className="items-center gap-4 mt-6">
+            <View className="items-center gap-4 mt-24">
               {dailyChallenge.data.challenge.challenge_code ===
               "walk_steps" ? (
-                <CircularProgressBase
-                  value={currentSteps}
-                  maxValue={dailyChallenge.data.units}
-                  radius={60}
-                  activeStrokeColor={"#4CAF50"}
-                  inActiveStrokeColor={"#D3D3D3"}
-                  inActiveStrokeOpacity={0.5}
+                <CircularProgress
+                value={currentSteps}
+                maxValue={dailyChallenge.data.units}
+                radius={100}
+                activeStrokeColor={"#4CAF50"}
+                inActiveStrokeColor={"#D3D3D3"}
+                inActiveStrokeOpacity={0.5}
+                title={`${currentSteps}/${dailyChallenge.data.units}`}
+                titleStyle={{ fontSize: 14 }}
                 />
               ) : dailyChallenge.data.challenge.challenge_code ===
                 "walk_kms" ? (
-                <CircularProgressBase
-                  value={currentDistance / 1000}
-                  maxValue={dailyChallenge.data.units}
-                  radius={60}
-                  activeStrokeColor={"#4CAF50"}
-                  inActiveStrokeColor={"#D3D3D3"}
-                  inActiveStrokeOpacity={0.5}
+                <CircularProgress
+                value={currentSteps}
+                maxValue={dailyChallenge.data.units}
+                radius={100}
+                activeStrokeColor={"#4CAF50"}
+                inActiveStrokeColor={"#D3D3D3"}
+                inActiveStrokeOpacity={0.5}
+                title={`${currentSteps}/${dailyChallenge.data.units}`}
+                titleStyle={{ fontSize: 14 }}
                 />
               ) : (
                 <Text className="text-foreground">
@@ -241,7 +245,6 @@ export default function Izazovi() {
                       100
                   )}
                   % završen<br />
-                  {currentSteps}/{dailyChallenge.data.units}
                 </Text>
               <View className="mt-4">
                 <Button
