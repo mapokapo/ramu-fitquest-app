@@ -15,6 +15,7 @@ import { useColorScheme } from "nativewind";
 import { challengesTranslationMap } from "@/lib/const/challenges-translation-map";
 import { usePedometer } from "@/lib/hooks/usePedometer";
 import { useDistance } from "@/lib/hooks/useDistance";
+import CircularProgress from "react-native-circular-progress-indicator";
 
 export default function Izazovi() {
   const user = useAppUser();
@@ -41,6 +42,7 @@ export default function Izazovi() {
   >({
     loaded: false,
   });
+
   const [hasChanges, setHasChanges] = useState(false);
   // currentSteps je broj koraka koje je korisnik napravio za trenutni izazov. Kada korisnik pravi korake, onda se vrijednost currentSteps povećava, no ova promjena je lokalna tj. ne ažurira se ništa na Supabase-u. Potrebno je dodati gumb "Pohrani promjene" ili koristiti useEffect kako bi se automatski detektiralo koliko često ažurirati podatke na Supabase-u (npr. nije potrebno ažurirati svaki korak ili svaki metar pređenog puta, već svakih 100 koraka ili 100 metara).
   const { currentSteps } = usePedometer(0);
@@ -49,8 +51,8 @@ export default function Izazovi() {
       ? dailyChallenge.data.challenge.challenge_code !== "walk_kms"
         ? 0
         : challengeProgress.loaded
-          ? challengeProgress.data.progress * 1000
-          : 0
+        ? challengeProgress.data.progress * 1000
+        : 0
       : 0
   );
 
@@ -62,7 +64,7 @@ export default function Izazovi() {
     async function fetchDailyChallenge() {
       const { data, error } = await supabase
         .from("daily_challenges")
-        .select(`*, challenge:challenge_id(*)`)
+        .select("*, challenge:challenge_id(*)")
         .order("id", { ascending: false })
         .limit(1)
         .single();
@@ -95,8 +97,7 @@ export default function Izazovi() {
       if (error) {
         const message = mapError(error);
         toast({
-          title:
-            "Greška pri dohvaćanju vašeg napretka prema postignuću izazova",
+          title: "Greška pri dohvaćanju vašeg napretka prema postignuću izazova",
           message: message,
         });
         console.error("Error fetching user challenge progress:", error);
@@ -127,6 +128,13 @@ export default function Izazovi() {
         setChallengeProgress({ loaded: true, data: newData });
       } else {
         setChallengeProgress({ loaded: true, data });
+      }
+
+      if (data && dailyChallenge.loaded && data.progress >= dailyChallenge.data.units) {
+        toast({
+          title: "Čestitamo, već ste završili dnevni izazov!",
+          message: "Posjetite nas sutra za novi izazov!",
+        });
       }
     }
 
@@ -169,6 +177,13 @@ export default function Izazovi() {
       .eq("user_id", user.id)
       .eq("daily_challenge_id", dailyChallenge.data.id);
 
+    if (newProgress >= dailyChallenge.data.units) {
+      toast({
+        title: "Čestitamo!",
+        message: "Završili ste dnevni izazov!",
+      });
+    }
+
     if (error) {
       const message = mapError(error);
       toast({
@@ -179,7 +194,7 @@ export default function Izazovi() {
       return;
     }
 
-    setChallengeProgress(prev => {
+    setChallengeProgress((prev) => {
       if (!prev.loaded) return prev;
 
       return {
@@ -194,7 +209,7 @@ export default function Izazovi() {
 
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
@@ -345,9 +360,8 @@ export default function Izazovi() {
             ) ?? "Nepoznati izazov"}
           </Text>
           {challengeProgress.loaded ? (
-            <View className="gap-4">
-              {dailyChallenge.data.challenge.challenge_code ===
-              "take_picture" ? (
+            <View className="items-center gap-4 mt-24">
+              {dailyChallenge.data.challenge.challenge_code === "take_picture" ? (
                 image.loaded ? (
                   image.data !== null && (
                     <View className="items-center gap-2">
@@ -377,21 +391,31 @@ export default function Izazovi() {
                     </Text>
                   </View>
                 )
-              ) : dailyChallenge.data.challenge.challenge_code ===
-                "walk_steps" ? (
-                <Text className="text-foreground">
-                  Vaš napredak: {currentSteps + challengeProgress.data.progress}/{dailyChallenge.data.units}
-                </Text>
-              ) : dailyChallenge.data.challenge.challenge_code ===
-                "walk_kms" ? (
-                <Text className="text-foreground">
-                  Vaš napredak: {(currentDistance / 1000).toFixed(3)}/
-                  {dailyChallenge.data.units} km
-                </Text>
+              ) : dailyChallenge.data.challenge.challenge_code === "walk_steps" ? (
+                <CircularProgress
+                  value={currentSteps + challengeProgress.data.progress}
+                  maxValue={dailyChallenge.data.units}
+                  radius={100}
+                  activeStrokeColor={"#4CAF50"}
+                  inActiveStrokeColor={"#D3D3D3"}
+                  inActiveStrokeOpacity={0.5}
+                  title={`${currentSteps}/${dailyChallenge.data.units}`}
+                  titleStyle={{ fontSize: 14 }}
+                />
+              ) : dailyChallenge.data.challenge.challenge_code === "walk_kms" ? (
+                <CircularProgress
+                  value={currentDistance / 1000}
+                  maxValue={dailyChallenge.data.units}
+                  radius={100}
+                  activeStrokeColor={"#4CAF50"}
+                  inActiveStrokeColor={"#D3D3D3"}
+                  inActiveStrokeOpacity={0.5}
+                  title={`${(currentDistance / 1000).toFixed(2)}/${dailyChallenge.data.units}`}
+                  titleStyle={{ fontSize: 14 }}
+                />
               ) : (
                 <Text className="text-foreground">
-                  Vaš napredak:{" "}
-                  {Math.round(
+                  Vaš napredak: {Math.round(
                     (challengeProgress.data.progress /
                       dailyChallenge.data.units) *
                       100
@@ -399,8 +423,8 @@ export default function Izazovi() {
                   % završen
                 </Text>
               )}
-              {dailyChallenge.data.challenge.challenge_code ===
-              "take_picture" ? (
+
+              {dailyChallenge.data.challenge.challenge_code === "take_picture" ? (
                 <View className="gap-4">
                   <Button
                     title="Odaberite sliku"
@@ -414,14 +438,28 @@ export default function Izazovi() {
                   )}
                 </View>
               ) : (
-                <Button
-                  title="(DEBUG) Dodaj +20% na napredak na izazov"
-                  onPress={debug_addProgess}
-                />
+                <>
+                  <Text className="text-foreground text-center">
+                    Vaš napredak: {Math.round(
+                      (challengeProgress.data.progress /
+                        dailyChallenge.data.units) *
+                        100
+                    )}
+                    % završen<br />
+                  </Text>
+                  <View className="mt-4">
+                    <Button
+                      title="(DEBUG) Dodaj +20% na napredak na izazov"
+                      onPress={debug_addProgess}
+                    />
+                  </View>
+                </>
               )}
             </View>
           ) : (
-            <Text className="text-foreground">Vaš napredak se učitava...</Text>
+            <Text className="text-foreground">
+              Vaš napredak se učitava...
+            </Text>
           )}
         </View>
       ) : (
