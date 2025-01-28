@@ -51,14 +51,14 @@ export default function Izazovi() {
       ? dailyChallenge.data.challenge.challenge_code !== "walk_kms"
         ? 0
         : challengeProgress.loaded
-        ? challengeProgress.data.progress * 1000
-        : 0
+          ? challengeProgress.data.progress * 1000
+          : 0
       : 0
   );
 
   useEffect(() => {
     testFunc();
-  },[currentSteps])
+  }, [currentSteps]);
 
   useEffect(() => {
     async function fetchDailyChallenge() {
@@ -97,7 +97,8 @@ export default function Izazovi() {
       if (error) {
         const message = mapError(error);
         toast({
-          title: "Greška pri dohvaćanju vašeg napretka prema postignuću izazova",
+          title:
+            "Greška pri dohvaćanju vašeg napretka prema postignuću izazova",
           message: message,
         });
         console.error("Error fetching user challenge progress:", error);
@@ -130,7 +131,11 @@ export default function Izazovi() {
         setChallengeProgress({ loaded: true, data });
       }
 
-      if (data && dailyChallenge.loaded && data.progress >= dailyChallenge.data.units) {
+      if (
+        data &&
+        dailyChallenge.loaded &&
+        data.progress >= dailyChallenge.data.units
+      ) {
         toast({
           title: "Čestitamo, već ste završili dnevni izazov!",
           message: "Posjetite nas sutra za novi izazov!",
@@ -194,7 +199,7 @@ export default function Izazovi() {
       return;
     }
 
-    setChallengeProgress((prev) => {
+    setChallengeProgress(prev => {
       if (!prev.loaded) return prev;
 
       return {
@@ -296,55 +301,55 @@ export default function Izazovi() {
     if (!dailyChallenge.loaded || !challengeProgress.loaded) {
       return;
     }
-      if(currentSteps - 20 >= oldValue){
-        setOldValue(currentSteps);
+    if (currentSteps - 20 >= oldValue) {
+      setOldValue(currentSteps);
 
-        if((currentSteps + challengeProgress.data.progress) > dailyChallenge.data.units){
-          const { error } = await supabase
-            .from("user_challenges")
-            .update({
-              user_id: user.id,
-              daily_challenge_id: dailyChallenge.data.id,
-              progress: (challengeProgress.data.progress + currentSteps),
-            })
-            .eq("user_id", user.id)
-            .eq("daily_challenge_id", dailyChallenge.data.id);
+      if (
+        currentSteps + challengeProgress.data.progress >
+        dailyChallenge.data.units
+      ) {
+        const { error } = await supabase
+          .from("user_challenges")
+          .update({
+            user_id: user.id,
+            daily_challenge_id: dailyChallenge.data.id,
+            progress: challengeProgress.data.progress + currentSteps,
+          })
+          .eq("user_id", user.id)
+          .eq("daily_challenge_id", dailyChallenge.data.id);
 
-            if (error) {
-              const message = mapError(error);
-              toast({
-                title: "Greška pri označavanju izazova kao završenog",
-                message: message,
-              });
-              console.error("Error completing daily challenge:", error);
-              return;
-            }
+        if (error) {
+          const message = mapError(error);
+          toast({
+            title: "Greška pri ažuriranju koraka",
+            message: message,
+          });
+          console.error("Error updating steps:", error);
+          return;
         }
-        else{
-          const { error } = await supabase
-            .from("user_challenges")
-            .update({
-              user_id: user.id,
-              daily_challenge_id: dailyChallenge.data.id,
-              progress: (dailyChallenge.data.units),
-            })
-            .eq("user_id", user.id)
-            .eq("daily_challenge_id", dailyChallenge.data.id);
+      } else {
+        const { error } = await supabase
+          .from("user_challenges")
+          .update({
+            user_id: user.id,
+            daily_challenge_id: dailyChallenge.data.id,
+            progress: dailyChallenge.data.units,
+          })
+          .eq("user_id", user.id)
+          .eq("daily_challenge_id", dailyChallenge.data.id);
 
-            if (error) {
-              const message = mapError(error);
-              toast({
-                title: "Greška pri označavanju izazova kao završenog",
-                message: message,
-              });
-              console.error("Error completing daily challenge:", error);
-              return;
-            }
+        if (error) {
+          const message = mapError(error);
+          toast({
+            title: "Greška pri ažuriranju koraka",
+            message: message,
+          });
+          console.error("Error updating steps:", error);
+          return;
         }
-  }  
-}
-
-  
+      }
+    }
+  };
 
   return (
     <View className="flex-1 gap-8 bg-background p-8">
@@ -360,8 +365,9 @@ export default function Izazovi() {
             ) ?? "Nepoznati izazov"}
           </Text>
           {challengeProgress.loaded ? (
-            <View className="items-center gap-4 mt-24">
-              {dailyChallenge.data.challenge.challenge_code === "take_picture" ? (
+            <View className="mt-24 items-center gap-4">
+              {dailyChallenge.data.challenge.challenge_code ===
+              "take_picture" ? (
                 image.loaded ? (
                   image.data !== null && (
                     <View className="items-center gap-2">
@@ -391,7 +397,8 @@ export default function Izazovi() {
                     </Text>
                   </View>
                 )
-              ) : dailyChallenge.data.challenge.challenge_code === "walk_steps" ? (
+              ) : dailyChallenge.data.challenge.challenge_code ===
+                "walk_steps" ? (
                 <CircularProgress
                   value={currentSteps + challengeProgress.data.progress}
                   maxValue={dailyChallenge.data.units}
@@ -402,7 +409,8 @@ export default function Izazovi() {
                   title={`${currentSteps}/${dailyChallenge.data.units}`}
                   titleStyle={{ fontSize: 14 }}
                 />
-              ) : dailyChallenge.data.challenge.challenge_code === "walk_kms" ? (
+              ) : dailyChallenge.data.challenge.challenge_code ===
+                "walk_kms" ? (
                 <CircularProgress
                   value={currentDistance / 1000}
                   maxValue={dailyChallenge.data.units}
@@ -415,7 +423,8 @@ export default function Izazovi() {
                 />
               ) : (
                 <Text className="text-foreground">
-                  Vaš napredak: {Math.round(
+                  Vaš napredak:{" "}
+                  {Math.round(
                     (challengeProgress.data.progress /
                       dailyChallenge.data.units) *
                       100
@@ -424,7 +433,8 @@ export default function Izazovi() {
                 </Text>
               )}
 
-              {dailyChallenge.data.challenge.challenge_code === "take_picture" ? (
+              {dailyChallenge.data.challenge.challenge_code ===
+              "take_picture" ? (
                 <View className="gap-4">
                   <Button
                     title="Odaberite sliku"
@@ -439,13 +449,14 @@ export default function Izazovi() {
                 </View>
               ) : (
                 <>
-                  <Text className="text-foreground text-center">
-                    Vaš napredak: {Math.round(
+                  <Text className="text-center text-foreground">
+                    Vaš napredak:{" "}
+                    {Math.round(
                       (challengeProgress.data.progress /
                         dailyChallenge.data.units) *
                         100
                     )}
-                    % završen<br />
+                    % završen
                   </Text>
                   <View className="mt-4">
                     <Button
@@ -457,9 +468,7 @@ export default function Izazovi() {
               )}
             </View>
           ) : (
-            <Text className="text-foreground">
-              Vaš napredak se učitava...
-            </Text>
+            <Text className="text-foreground">Vaš napredak se učitava...</Text>
           )}
         </View>
       ) : (
