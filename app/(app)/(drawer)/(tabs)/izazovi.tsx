@@ -300,45 +300,11 @@ export default function Izazovi() {
     ) {
       return;
     }
-    if (currentSteps - 20 >= oldValue) {
-      setOldValue(currentSteps);
-
-      if (
-        currentSteps + challengeProgress.data.progress <=
-        dailyChallenge.data.units
-      ) {
-        const { error } = await supabase
-          .from("user_challenges")
-          .update({
-            user_id: user.id,
-            daily_challenge_id: dailyChallenge.data.id,
-            progress: challengeProgress.data.progress + currentSteps,
-          })
-          .eq("user_id", user.id)
-          .eq("daily_challenge_id", dailyChallenge.data.id);
-
-        if (error) {
-          const message = mapError(error);
-          toast({
-            title: "Greška pri ažuriranju koraka",
-            message: message,
-          });
-          console.error("Error updating steps:", error);
-          return;
-        }
-        setChallengeProgress(prev => {
-          if (!prev.loaded) return prev;
-    
-          return {
-            loaded: true,
-            data: {
-              ...prev.data,
-              progress: challengeProgress.data.progress + currentSteps,
-            },
-          };
-        });
-      } else {
-        const { error } = await supabase
+    if (
+      currentSteps + challengeProgress.data.progress >=
+      dailyChallenge.data.units
+    ) {
+      const { error } = await supabase
           .from("user_challenges")
           .update({
             user_id: user.id,
@@ -373,90 +339,119 @@ export default function Izazovi() {
           title: "Čestitamo, već ste završili dnevni izazov!",
           message: "Posjetite nas sutra za novi izazov!",
         });
-      }
+    }
+    else if (currentSteps - 20 >= oldValue) {
+      setOldValue(currentSteps);
+        const { error } = await supabase
+          .from("user_challenges")
+          .update({
+            user_id: user.id,
+            daily_challenge_id: dailyChallenge.data.id,
+            progress: challengeProgress.data.progress + currentSteps,
+          })
+          .eq("user_id", user.id)
+          .eq("daily_challenge_id", dailyChallenge.data.id);
+
+        if (error) {
+          const message = mapError(error);
+          toast({
+            title: "Greška pri ažuriranju koraka",
+            message: message,
+          });
+          console.error("Error updating steps:", error);
+          return;
+        }
+        setChallengeProgress(prev => {
+          if (!prev.loaded) return prev;
+          return {
+            loaded: true,
+            data: {
+              ...prev.data,
+              progress: challengeProgress.data.progress + currentSteps,
+            },
+          };
+        });
     }
   };
 
   const updateDistance = async () => {
-    if (!dailyChallenge.loaded || !challengeProgress.loaded 
-      || dailyChallenge.data.challenge.challenge_code !== "walk_m" || !isUpdating) {
-      return;
-    }
-      if(currentDistance - 10 >= oldValue){
-        setOldValue(currentDistance);
-  
-        if((Math.floor(currentDistance) + challengeProgress.data.progress) < dailyChallenge.data.units){
-          const { error } = await supabase
+    if (!dailyChallenge.loaded || !challengeProgress.loaded || 
+      dailyChallenge.data.challenge.challenge_code !== "walk_m" || !isUpdating
+      ) {
+        return;
+      }
+      if (
+        Math.floor(currentDistance) + challengeProgress.data.progress >=
+        dailyChallenge.data.units
+      ) {
+        const { error } = await supabase
             .from("user_challenges")
             .update({
               user_id: user.id,
               daily_challenge_id: dailyChallenge.data.id,
-              progress: (challengeProgress.data.progress + Math.floor(currentDistance)),
+              progress: dailyChallenge.data.units,
             })
             .eq("user_id", user.id)
             .eq("daily_challenge_id", dailyChallenge.data.id);
   
-            if (error) {
-              const message = mapError(error);
-              toast({
-                title: "Greška pri označavanju izazova kao završenog",
-                message: message,
-              });
-              console.error("Error completing daily challenge:", error);
-              return;
-            }
-            setChallengeProgress(prev => {
-              if (!prev.loaded) return prev;
-        
-              return {
-                loaded: true,
-                data: {
-                  ...prev.data,
-                  progress: challengeProgress.data.progress + currentDistance,
-                },
-              };
-            });
-        }
-        else{
-          const { error } = await supabase
-            .from("user_challenges")
-            .update({
-              user_id: user.id,
-              daily_challenge_id: dailyChallenge.data.id,
-              progress: (dailyChallenge.data.units),
-            })
-            .eq("user_id", user.id)
-            .eq("daily_challenge_id", dailyChallenge.data.id);
-
-
-  
-            if (error) {
-              const message = mapError(error);
-              toast({
-                title: "Greška pri označavanju izazova kao završenog",
-                message: message,
-              });
-              console.error("Error completing daily challenge:", error);
-              return;
-            }
-            setChallengeProgress(prev => {
-              if (!prev.loaded) return prev;
-        
-              return {
-                loaded: true,
-                data: {
-                  ...prev.data,
-                  progress: challengeProgress.data.progress + currentDistance,
-                },
-              };
-            });
-            setIsUpdating(false);
+          if (error) {
+            const message = mapError(error);
             toast({
-              title: "Čestitamo, već ste završili dnevni izazov!",
-              message: "Posjetite nas sutra za novi izazov!",
+              title: "Greška pri ažuriranju koraka",
+              message: message,
             });
-        }
-    }  
+            console.error("Error updating steps:", error);
+            return;
+          }
+          setChallengeProgress(prev => {
+            if (!prev.loaded) return prev;
+      
+            return {
+              loaded: true,
+              data: {
+                ...prev.data,
+                progress: challengeProgress.data.progress + Math.floor(currentDistance),
+              },
+            };
+          });
+          setIsUpdating(false);
+          toast({
+            title: "Čestitamo, već ste završili dnevni izazov!",
+            message: "Posjetite nas sutra za novi izazov!",
+          });
+      }
+      else if (Math.floor(currentDistance) - 10 >= oldValue) {
+        setOldValue(Math.floor(currentDistance));
+          const { error } = await supabase
+            .from("user_challenges")
+            .update({
+              user_id: user.id,
+              daily_challenge_id: dailyChallenge.data.id,
+              progress: challengeProgress.data.progress + Math.floor(currentDistance),
+            })
+            .eq("user_id", user.id)
+            .eq("daily_challenge_id", dailyChallenge.data.id);
+  
+          if (error) {
+            const message = mapError(error);
+            toast({
+              title: "Greška pri ažuriranju koraka",
+              message: message,
+            });
+            console.error("Error updating steps:", error);
+            return;
+          }
+          setChallengeProgress(prev => {
+            if (!prev.loaded) return prev;
+            return {
+              loaded: true,
+              data: {
+                ...prev.data,
+                progress: challengeProgress.data.progress + Math.floor(currentDistance),
+              },
+            };
+          });
+      }
   }
 
   return (
