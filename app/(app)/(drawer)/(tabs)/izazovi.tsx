@@ -292,12 +292,12 @@ export default function Izazovi() {
   };
 
   const [oldValue, setOldValue] = useState(0);
+  const [isUpdating, setIsUpdating] = useState(true);
 
   const updateSteps = async () => {
-    if (!dailyChallenge.loaded || !challengeProgress.loaded) {
-      return;
-    }
-    if(dailyChallenge.data.challenge.challenge_code !== "walk_steps"){
+    if (!dailyChallenge.loaded || !challengeProgress.loaded || 
+    dailyChallenge.data.challenge.challenge_code !== "walk_steps" || !isUpdating
+    ) {
       return;
     }
     if (currentSteps - 20 >= oldValue) {
@@ -368,15 +368,18 @@ export default function Izazovi() {
             },
           };
         });
+        setIsUpdating(false);
+        toast({
+          title: "Čestitamo, već ste završili dnevni izazov!",
+          message: "Posjetite nas sutra za novi izazov!",
+        });
       }
     }
   };
 
   const updateDistance = async () => {
-    if (!dailyChallenge.loaded || !challengeProgress.loaded) {
-      return;
-    }
-    if(dailyChallenge.data.challenge.challenge_code !== "walk_m"){
+    if (!dailyChallenge.loaded || !challengeProgress.loaded 
+      || dailyChallenge.data.challenge.challenge_code !== "walk_m" || !isUpdating) {
       return;
     }
       if(currentDistance - 10 >= oldValue){
@@ -402,6 +405,17 @@ export default function Izazovi() {
               console.error("Error completing daily challenge:", error);
               return;
             }
+            setChallengeProgress(prev => {
+              if (!prev.loaded) return prev;
+        
+              return {
+                loaded: true,
+                data: {
+                  ...prev.data,
+                  progress: challengeProgress.data.progress + currentDistance,
+                },
+              };
+            });
         }
         else{
           const { error } = await supabase
@@ -413,6 +427,8 @@ export default function Izazovi() {
             })
             .eq("user_id", user.id)
             .eq("daily_challenge_id", dailyChallenge.data.id);
+
+
   
             if (error) {
               const message = mapError(error);
@@ -423,6 +439,22 @@ export default function Izazovi() {
               console.error("Error completing daily challenge:", error);
               return;
             }
+            setChallengeProgress(prev => {
+              if (!prev.loaded) return prev;
+        
+              return {
+                loaded: true,
+                data: {
+                  ...prev.data,
+                  progress: challengeProgress.data.progress + currentDistance,
+                },
+              };
+            });
+            setIsUpdating(false);
+            toast({
+              title: "Čestitamo, već ste završili dnevni izazov!",
+              message: "Posjetite nas sutra za novi izazov!",
+            });
         }
     }  
   }
