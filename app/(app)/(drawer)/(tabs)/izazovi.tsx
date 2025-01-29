@@ -326,6 +326,17 @@ export default function Izazovi() {
           console.error("Error updating steps:", error);
           return;
         }
+        setChallengeProgress(prev => {
+          if (!prev.loaded) return prev;
+    
+          return {
+            loaded: true,
+            data: {
+              ...prev.data,
+              progress: challengeProgress.data.progress + currentSteps,
+            },
+          };
+        });
       } else {
         const { error } = await supabase
           .from("user_challenges")
@@ -346,6 +357,17 @@ export default function Izazovi() {
           console.error("Error updating steps:", error);
           return;
         }
+        setChallengeProgress(prev => {
+          if (!prev.loaded) return prev;
+    
+          return {
+            loaded: true,
+            data: {
+              ...prev.data,
+              progress: challengeProgress.data.progress + currentSteps,
+            },
+          };
+        });
       }
     }
   };
