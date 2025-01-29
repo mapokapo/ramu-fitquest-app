@@ -357,6 +357,7 @@ export default function Izazovi() {
       }
       setChallengeProgress(prev => {
         if (!prev.loaded) return prev;
+
         return {
           loaded: true,
           data: {
@@ -524,27 +525,27 @@ export default function Izazovi() {
               ) : dailyChallenge.data.challenge.challenge_code ===
                 "walk_steps" ? (
                 <CircularProgress
-                  value={currentSteps + challengeProgress.data.progress}
+                  value={challengeProgress.data.progress + (currentSteps % 21)}
                   maxValue={dailyChallenge.data.units}
                   radius={100}
                   activeStrokeColor={"#4CAF50"}
                   inActiveStrokeColor={"#D3D3D3"}
                   inActiveStrokeOpacity={0.5}
-                  title={`${currentSteps + challengeProgress.data.progress}/${dailyChallenge.data.units}`}
+                  title={`${challengeProgress.data.progress + (currentSteps % 21)}/${dailyChallenge.data.units}`}
                   titleStyle={{ fontSize: 14 }}
                 />
               ) : dailyChallenge.data.challenge.challenge_code === "walk_m" ? (
                 <CircularProgress
                   value={
-                    Math.floor(currentDistance) +
-                    challengeProgress.data.progress
+                    challengeProgress.data.progress +
+                    (Math.floor(currentDistance) % 11)
                   }
                   maxValue={dailyChallenge.data.units}
                   radius={100}
                   activeStrokeColor={"#4CAF50"}
                   inActiveStrokeColor={"#D3D3D3"}
                   inActiveStrokeOpacity={0.5}
-                  title={`${Math.floor(currentDistance) + challengeProgress.data.progress}/${dailyChallenge.data.units}`}
+                  title={`${challengeProgress.data.progress + Math.floor(currentDistance % 11)}/${dailyChallenge.data.units}`}
                   titleStyle={{ fontSize: 14 }}
                 />
               ) : (
