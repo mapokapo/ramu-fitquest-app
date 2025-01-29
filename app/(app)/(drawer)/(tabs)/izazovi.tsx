@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, Image } from "react-native";
 import Button from "@/components/ui/button";
 import { useAppUser } from "@/lib/context/user-provider";
@@ -47,14 +47,6 @@ export default function Izazovi() {
   // currentSteps je broj koraka koje je korisnik napravio za trenutni izazov. Kada korisnik pravi korake, onda se vrijednost currentSteps povećava, no ova promjena je lokalna tj. ne ažurira se ništa na Supabase-u. Potrebno je dodati gumb "Pohrani promjene" ili koristiti useEffect kako bi se automatski detektiralo koliko često ažurirati podatke na Supabase-u (npr. nije potrebno ažurirati svaki korak ili svaki metar pređenog puta, već svakih 100 koraka ili 100 metara).
   const { currentSteps } = usePedometer(0);
   const { currentDistance } = useDistance(0);
-
-  useEffect(() => {
-    updateSteps();
-  }, [currentSteps]);
-
-  useEffect(() => {
-    updateDistance();
-  },[currentDistance])
 
   useEffect(() => {
     async function fetchDailyChallenge() {
@@ -294,9 +286,12 @@ export default function Izazovi() {
   const [oldValue, setOldValue] = useState(0);
   const [isUpdating, setIsUpdating] = useState(true);
 
-  const updateSteps = async () => {
-    if (!dailyChallenge.loaded || !challengeProgress.loaded || 
-    dailyChallenge.data.challenge.challenge_code !== "walk_steps" || !isUpdating
+  const updateSteps = useCallback(async () => {
+    if (
+      !dailyChallenge.loaded ||
+      !challengeProgress.loaded ||
+      dailyChallenge.data.challenge.challenge_code !== "walk_steps" ||
+      !isUpdating
     ) {
       return;
     }
@@ -305,154 +300,180 @@ export default function Izazovi() {
       dailyChallenge.data.units
     ) {
       const { error } = await supabase
-          .from("user_challenges")
-          .update({
-            user_id: user.id,
-            daily_challenge_id: dailyChallenge.data.id,
-            progress: dailyChallenge.data.units,
-          })
-          .eq("user_id", user.id)
-          .eq("daily_challenge_id", dailyChallenge.data.id);
+        .from("user_challenges")
+        .update({
+          user_id: user.id,
+          daily_challenge_id: dailyChallenge.data.id,
+          progress: dailyChallenge.data.units,
+        })
+        .eq("user_id", user.id)
+        .eq("daily_challenge_id", dailyChallenge.data.id);
 
-        if (error) {
-          const message = mapError(error);
-          toast({
-            title: "Greška pri ažuriranju koraka",
-            message: message,
-          });
-          console.error("Error updating steps:", error);
-          return;
-        }
-        setChallengeProgress(prev => {
-          if (!prev.loaded) return prev;
-    
-          return {
-            loaded: true,
-            data: {
-              ...prev.data,
-              progress: challengeProgress.data.progress + currentSteps,
-            },
-          };
-        });
-        setIsUpdating(false);
+      if (error) {
+        const message = mapError(error);
         toast({
-          title: "Čestitamo, već ste završili dnevni izazov!",
-          message: "Posjetite nas sutra za novi izazov!",
+          title: "Greška pri ažuriranju koraka",
+          message: message,
         });
-    }
-    else if (currentSteps - 20 >= oldValue) {
-      setOldValue(currentSteps);
-        const { error } = await supabase
-          .from("user_challenges")
-          .update({
-            user_id: user.id,
-            daily_challenge_id: dailyChallenge.data.id,
-            progress: challengeProgress.data.progress + currentSteps,
-          })
-          .eq("user_id", user.id)
-          .eq("daily_challenge_id", dailyChallenge.data.id);
-
-        if (error) {
-          const message = mapError(error);
-          toast({
-            title: "Greška pri ažuriranju koraka",
-            message: message,
-          });
-          console.error("Error updating steps:", error);
-          return;
-        }
-        setChallengeProgress(prev => {
-          if (!prev.loaded) return prev;
-          return {
-            loaded: true,
-            data: {
-              ...prev.data,
-              progress: challengeProgress.data.progress + currentSteps,
-            },
-          };
-        });
-    }
-  };
-
-  const updateDistance = async () => {
-    if (!dailyChallenge.loaded || !challengeProgress.loaded || 
-      dailyChallenge.data.challenge.challenge_code !== "walk_m" || !isUpdating
-      ) {
+        console.error("Error updating steps:", error);
         return;
       }
-      if (
-        Math.floor(currentDistance) + challengeProgress.data.progress >=
-        dailyChallenge.data.units
-      ) {
-        const { error } = await supabase
-            .from("user_challenges")
-            .update({
-              user_id: user.id,
-              daily_challenge_id: dailyChallenge.data.id,
-              progress: dailyChallenge.data.units,
-            })
-            .eq("user_id", user.id)
-            .eq("daily_challenge_id", dailyChallenge.data.id);
-  
-          if (error) {
-            const message = mapError(error);
-            toast({
-              title: "Greška pri ažuriranju koraka",
-              message: message,
-            });
-            console.error("Error updating steps:", error);
-            return;
-          }
-          setChallengeProgress(prev => {
-            if (!prev.loaded) return prev;
-      
-            return {
-              loaded: true,
-              data: {
-                ...prev.data,
-                progress: challengeProgress.data.progress + Math.floor(currentDistance),
-              },
-            };
-          });
-          setIsUpdating(false);
-          toast({
-            title: "Čestitamo, već ste završili dnevni izazov!",
-            message: "Posjetite nas sutra za novi izazov!",
-          });
+      setChallengeProgress(prev => {
+        if (!prev.loaded) return prev;
+
+        return {
+          loaded: true,
+          data: {
+            ...prev.data,
+            progress: challengeProgress.data.progress + currentSteps,
+          },
+        };
+      });
+      setIsUpdating(false);
+      toast({
+        title: "Čestitamo, već ste završili dnevni izazov!",
+        message: "Posjetite nas sutra za novi izazov!",
+      });
+    } else if (currentSteps - 20 >= oldValue) {
+      setOldValue(currentSteps);
+      const { error } = await supabase
+        .from("user_challenges")
+        .update({
+          user_id: user.id,
+          daily_challenge_id: dailyChallenge.data.id,
+          progress: challengeProgress.data.progress + currentSteps,
+        })
+        .eq("user_id", user.id)
+        .eq("daily_challenge_id", dailyChallenge.data.id);
+
+      if (error) {
+        const message = mapError(error);
+        toast({
+          title: "Greška pri ažuriranju koraka",
+          message: message,
+        });
+        console.error("Error updating steps:", error);
+        return;
       }
-      else if (Math.floor(currentDistance) - 10 >= oldValue) {
-        setOldValue(Math.floor(currentDistance));
-          const { error } = await supabase
-            .from("user_challenges")
-            .update({
-              user_id: user.id,
-              daily_challenge_id: dailyChallenge.data.id,
-              progress: challengeProgress.data.progress + Math.floor(currentDistance),
-            })
-            .eq("user_id", user.id)
-            .eq("daily_challenge_id", dailyChallenge.data.id);
-  
-          if (error) {
-            const message = mapError(error);
-            toast({
-              title: "Greška pri ažuriranju koraka",
-              message: message,
-            });
-            console.error("Error updating steps:", error);
-            return;
-          }
-          setChallengeProgress(prev => {
-            if (!prev.loaded) return prev;
-            return {
-              loaded: true,
-              data: {
-                ...prev.data,
-                progress: challengeProgress.data.progress + Math.floor(currentDistance),
-              },
-            };
-          });
+      setChallengeProgress(prev => {
+        if (!prev.loaded) return prev;
+        return {
+          loaded: true,
+          data: {
+            ...prev.data,
+            progress: challengeProgress.data.progress + currentSteps,
+          },
+        };
+      });
+    }
+  }, [
+    challengeProgress,
+    dailyChallenge,
+    currentSteps,
+    user,
+    isUpdating,
+    oldValue,
+  ]);
+
+  const updateDistance = useCallback(async () => {
+    if (
+      !dailyChallenge.loaded ||
+      !challengeProgress.loaded ||
+      dailyChallenge.data.challenge.challenge_code !== "walk_m" ||
+      !isUpdating
+    ) {
+      return;
+    }
+    if (
+      Math.floor(currentDistance) + challengeProgress.data.progress >=
+      dailyChallenge.data.units
+    ) {
+      const { error } = await supabase
+        .from("user_challenges")
+        .update({
+          user_id: user.id,
+          daily_challenge_id: dailyChallenge.data.id,
+          progress: dailyChallenge.data.units,
+        })
+        .eq("user_id", user.id)
+        .eq("daily_challenge_id", dailyChallenge.data.id);
+
+      if (error) {
+        const message = mapError(error);
+        toast({
+          title: "Greška pri ažuriranju koraka",
+          message: message,
+        });
+        console.error("Error updating steps:", error);
+        return;
       }
-  }
+      setChallengeProgress(prev => {
+        if (!prev.loaded) return prev;
+
+        return {
+          loaded: true,
+          data: {
+            ...prev.data,
+            progress:
+              challengeProgress.data.progress + Math.floor(currentDistance),
+          },
+        };
+      });
+      setIsUpdating(false);
+      toast({
+        title: "Čestitamo, već ste završili dnevni izazov!",
+        message: "Posjetite nas sutra za novi izazov!",
+      });
+    } else if (Math.floor(currentDistance) - 10 >= oldValue) {
+      setOldValue(Math.floor(currentDistance));
+      const { error } = await supabase
+        .from("user_challenges")
+        .update({
+          user_id: user.id,
+          daily_challenge_id: dailyChallenge.data.id,
+          progress:
+            challengeProgress.data.progress + Math.floor(currentDistance),
+        })
+        .eq("user_id", user.id)
+        .eq("daily_challenge_id", dailyChallenge.data.id);
+
+      if (error) {
+        const message = mapError(error);
+        toast({
+          title: "Greška pri ažuriranju koraka",
+          message: message,
+        });
+        console.error("Error updating steps:", error);
+        return;
+      }
+      setChallengeProgress(prev => {
+        if (!prev.loaded) return prev;
+        return {
+          loaded: true,
+          data: {
+            ...prev.data,
+            progress:
+              challengeProgress.data.progress + Math.floor(currentDistance),
+          },
+        };
+      });
+    }
+  }, [
+    challengeProgress,
+    dailyChallenge,
+    currentDistance,
+    user,
+    isUpdating,
+    oldValue,
+  ]);
+
+  useEffect(() => {
+    updateSteps();
+  }, [currentSteps, updateSteps]);
+
+  useEffect(() => {
+    updateDistance();
+  }, [currentDistance, updateDistance]);
 
   return (
     <View className="flex-1 gap-8 bg-background p-8">
@@ -512,10 +533,12 @@ export default function Izazovi() {
                   title={`${currentSteps + challengeProgress.data.progress}/${dailyChallenge.data.units}`}
                   titleStyle={{ fontSize: 14 }}
                 />
-              ) : dailyChallenge.data.challenge.challenge_code ===
-                "walk_m" ? (
+              ) : dailyChallenge.data.challenge.challenge_code === "walk_m" ? (
                 <CircularProgress
-                  value={Math.floor(currentDistance) + challengeProgress.data.progress}
+                  value={
+                    Math.floor(currentDistance) +
+                    challengeProgress.data.progress
+                  }
                   maxValue={dailyChallenge.data.units}
                   radius={100}
                   activeStrokeColor={"#4CAF50"}

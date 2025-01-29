@@ -11,7 +11,7 @@ export const challengesTranslationMap = (
     read_pages: (pages: number) => `Pročitajte ${pages} stranica knjige`,
     do_situps: (situps: number) => `Napravite ${situps} trbušnjaka`,
     do_squats: (squats: number) => `Napravite ${squats} čučnjeva`,
-    walk_m: (m: number) => `Pređite ${m} kilometara`,
+    walk_m: (m: number) => `Pređite ${m} metara`,
     do_yoga_mins: (mins: number) => `Odradite ${mins} minuta joge`,
     take_picture: () => `Uslikajte motivirajuću sliku`,
   };
